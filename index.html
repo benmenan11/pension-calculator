@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>מחשבון פרישה – משטרת ישראל</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    :root{
+      --bg:#f1f3f6; --text:#0b2540; --muted:#4a6077; --muted2:#7a869a;
+      --card:#ffffff; --line:#dde3ef; --line2:#c1c7d0; --blue1:#009dff; --blue2:#004a8f;
+    }
+    body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);
+      display:flex;flex-direction:column;min-height:100vh;font-size:17px;}
+    header{background:radial-gradient(circle at top left,var(--blue1),var(--blue2));color:white;padding:10px 14px 12px;position:relative;flex:0 0 auto;}
+    header::after{content:"";position:absolute;inset:0;background-image:
+      radial-gradient(circle at 15% 30%, rgba(255,255,255,0.17) 0, transparent 55%),
+      radial-gradient(circle at 80% 70%, rgba(255,255,255,0.13) 0, transparent 55%);
+      opacity:0.9;pointer-events:none;}
+    .header-content{position:relative;z-index:1;max-width:1024px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .header-text{display:flex;flex-direction:column;}
+    .logo-text{font-size:18px;font-weight:700;}
+    .tagline{font-size:13px;opacity:0.95;}
+    .ai-pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,0.12);
+      border:1px solid rgba(255,255,255,0.3);font-size:12px;backdrop-filter:blur(10px);white-space:nowrap;}
+    .ai-dot{width:8px;height:8px;border-radius:50%;background:#32ff9b;box-shadow:0 0 7px #32ff9b;}
+
+    main{flex:1 1 auto;max-width:1024px;width:100%;margin:0 auto;padding:12px;display:flex;flex-direction:column;gap:12px;}
+    .intro-card{background:var(--card);border-radius:16px;box-shadow:0 8px 20px rgba(9,30,66,0.16);padding:16px 16px 12px;display:flex;flex-direction:column;gap:8px;}
+    .intro-title{font-size:18px;font-weight:700;}
+    .intro-subtitle{font-size:14.5px;color:var(--muted);line-height:1.35;}
+    .hint{font-size:13px;color:var(--muted2);line-height:1.35;}
+
+    .calc-shell{background:#f7f8fb;box-shadow:0 8px 22px rgba(9,30,66,0.18);border-radius:18px;border:1px solid var(--line);padding:12px 14px 14px;
+      position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px;}
+    .calc-shell::before{content:"";position:absolute;inset:0;background-image:
+      radial-gradient(circle at 0 0, rgba(0,0,0,0.04) 0, rgba(0,0,0,0.0) 55%),
+      radial-gradient(circle at 100% 0, rgba(0,0,0,0.04) 0, rgba(0,0,0,0.0) 55%),
+      repeating-linear-gradient(135deg, rgba(0,0,0,0.02), rgba(0,0,0,0.02) 6px, transparent 6px, transparent 12px);
+      opacity:0.7;pointer-events:none;}
+    .calc-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;}
+    .calc-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .calc-title{font-size:15px;font-weight:800;}
+    .badge{font-size:12px;padding:4px 10px;border-radius:999px;background:#e6f4ff;color:#0052cc;border:1px solid #c2e0ff;white-space:nowrap;}
+
+    .calc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;font-size:14.5px;}
+    .field{display:flex;flex-direction:column;gap:6px;}
+    .field label{font-size:13.5px;color:#344563;}
+    .field input,.field select{border-radius:10px;border:1px solid var(--line2);padding:10px 10px;font-size:15.5px;background:white;}
+    .field small{font-size:12.5px;color:var(--muted2);}
+
+    .periods-card{background:rgba(255,255,255,0.96);border-radius:16px;padding:12px;border:1px solid var(--line);display:flex;flex-direction:column;gap:10px;}
+    .periods-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+    .periods-header h3{margin:0;font-size:15.5px;font-weight:900;}
+    .periods-sub{margin-top:4px;font-size:12.8px;color:var(--muted2);line-height:1.35;}
+    .pill{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid var(--line2);color:#42526e;background:white;white-space:nowrap;}
+
+    .period-type-row{padding:10px;border-radius:14px;background:#f4f5f7;border:1px solid #e6e9f0;}
+    .period-type-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .period-type-header-left{display:flex;align-items:center;gap:10px;font-size:13.8px;font-weight:800;flex-wrap:wrap;}
+
+    .help-dot{width:22px;height:22px;border-radius:999px;border:1px solid #c1c7d0;background:white;color:#344563;display:inline-flex;align-items:center;justify-content:center;
+      font-weight:900;cursor:pointer;position:relative;flex:0 0 auto;user-select:none;}
+    .tooltip{position:absolute;top:28px;right:0;width:min(520px,80vw);background:white;border:1px solid #dfe4ee;box-shadow:0 10px 24px rgba(9,30,66,0.18);
+      border-radius:12px;padding:10px 12px;font-size:12.5px;color:#253858;line-height:1.35;display:none;z-index:50;white-space:pre-line;}
+    .help-dot.open .tooltip{display:block;}
+
+    .period-type-form{display:none;margin-top:10px;}
+    .period-type-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:flex-end;}
+
+    .small-btn{border-radius:999px;border:none;padding:10px 12px;font-size:13.5px;cursor:pointer;background:linear-gradient(135deg,#0078ff,#00c3ff);color:white;
+      box-shadow:0 6px 16px rgba(0,120,255,0.28);white-space:nowrap;font-weight:900;}
+
+    .periods-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px;overflow:hidden;border-radius:12px;}
+    .periods-table th,.periods-table td{border-bottom:1px solid #e1e4ea;padding:8px 8px;text-align:right;vertical-align:top;}
+    .periods-table th{background:#f4f5f7;font-weight:900;font-size:13.5px;}
+    .table-actions button{border-radius:999px;border:1px solid var(--line2);padding:6px 10px;font-size:12.5px;cursor:pointer;background:white;margin-left:6px;white-space:nowrap;font-weight:900;}
+    .table-actions button.primary{border:none;background:linear-gradient(135deg,#0078ff,#00c3ff);color:#fff;}
+
+    .inline-input{
+      width:100%;
+      padding:8px 9px;
+      border-radius:10px;
+      border:1px solid #c1c7d0;
+      background:#fff;
+      font-size:14px;
+      box-sizing:border-box;
+    }
+
+    .calc-actions{margin-top:2px;display:flex;gap:10px;flex-wrap:wrap;}
+    .primary-btn{background:linear-gradient(135deg,#0078ff,#00c3ff);color:white;border:none;border-radius:999px;padding:10px 16px;font-size:14.5px;font-weight:900;cursor:pointer;
+      display:inline-flex;align-items:center;gap:8px;box-shadow:0 8px 18px rgba(0,120,255,0.32);}
+    .secondary-btn{border-radius:999px;border:1px solid var(--line2);padding:10px 16px;font-size:14.5px;cursor:pointer;background:white;color:#42526e;font-weight:900;}
+
+    .result-box{margin-top:8px;background:rgba(255,255,255,0.96);border-radius:14px;padding:12px 12px;border:1px dashed var(--line2);font-size:13.8px;color:#253858;white-space:pre-line;}
+    .result-title{font-weight:950;margin-bottom:6px;font-size:14.5px;}
+    .footnote{font-size:12.5px;color:#6b778c;margin-top:8px;line-height:1.35;}
+
+    /* Responsive table -> "cards" on mobile */
+    @media (max-width: 760px){
+      .calc-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+      .period-type-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+
+      .periods-table thead{display:none;}
+      .periods-table, .periods-table tbody, .periods-table tr{display:block;width:100%;}
+      .periods-table tr{
+        background:#ffffff;
+        border:1px solid #e6e9f0;
+        border-radius:14px;
+        padding:8px;
+        margin-top:10px;
+        box-shadow:0 6px 14px rgba(9,30,66,0.08);
+      }
+      .periods-table td{
+        display:flex;
+        justify-content:space-between;
+        gap:12px;
+        border-bottom:1px dashed #e6e9f0;
+        padding:8px 6px;
+        text-align:right;
+      }
+      .periods-table td:last-child{border-bottom:none;}
+      .periods-table td::before{
+        content: attr(data-label);
+        font-weight:900;
+        color:#344563;
+        flex:0 0 44%;
+      }
+      .table-actions{
+        display:flex;
+        justify-content:flex-start;
+        gap:8px;
+        flex-wrap:wrap;
+      }
+      .periods-table td.table-actions::before{content:"פעולות";}
+
+      .calc-grid{grid-template-columns:minmax(0,1fr);}
+      .period-type-grid{grid-template-columns:minmax(0,1fr);}
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="header-content">
+    <div class="header-text">
+      <div class="logo-text">משטרת ישראל</div>
+      <div class="tagline">מחשבון פרישה – אומדן קצבה לפי החוקה</div>
+    </div>
+    <div class="ai-pill">
+      <div class="ai-dot"></div>
+      חישוב ותק, קצבה והגדלות מפכ״ל
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="intro-card">
+    <div class="intro-title">אומדן פרישה וקצבה</div>
+    <div class="intro-subtitle">
+      אפשר להוסיף תקופות, לערוך אותן בכל שלב (גם לפני הרצה ראשונה), לשנות כל שדה ולהריץ שוב.
+      תאריכים ניתן להזין בכל פורמט נפוץ: 1.1.2020 / 01/01/20 / 01-01-2020.
+    </div>
+    <div class="hint">
+      תקרת 70% חלה על: שירות נוכחי במשטרה + מקומות עבודה קודמים + תקופות היעדרות שנרכשו. ניתן לחרוג מ-70% רק בגין שירות חובה בצה״ל.
+    </div>
+  </section>
+
+  <section class="calc-shell">
+    <div class="calc-inner">
+      <div class="calc-header">
+        <div class="calc-title">פרטים כלליים</div>
+        <div class="badge">עריכה זמינה תמיד</div>
+      </div>
+
+      <div class="calc-grid">
+        <div class="field">
+          <label for="f_salary">משכורת קובעת (₪)</label>
+          <input id="f_salary" type="number" min="0" placeholder="לדוגמה: 24,382" />
+        </div>
+
+        <div class="field">
+          <label for="f_birthdate">תאריך לידה</label>
+          <input id="f_birthdate" type="text" inputmode="numeric" placeholder="1.1.1990 / 01/01/90" />
+        </div>
+
+        <div class="field">
+          <label for="f_join_date">תאריך גיוס אחרון למשטרה</label>
+          <input id="f_join_date" type="text" inputmode="numeric" placeholder="15.7.2010" />
+        </div>
+
+        <div class="field">
+          <label for="f_retire_date">תאריך פרישה משוער</label>
+          <input id="f_retire_date" type="text" inputmode="numeric" placeholder="31.1.2027" />
+        </div>
+
+        <div class="field">
+          <label for="f_pension_type">סוג פנסיה</label>
+          <select id="f_pension_type">
+            <option value="budget">פנסיה תקציבית</option>
+            <option value="funded">פנסיה צוברת</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f_retire_cause">עילת פרישה</label>
+          <select id="f_retire_cause">
+            <option value="">בחר/י...</option>
+            <option value="varam">פרישת ור״ם</option>
+            <option value="age">פרישת גיל</option>
+            <option value="early">פרישה מוקדמת</option>
+            <option value="dismissal">פיטורין עם זכות גמלה</option>
+          </select>
+        </div>
+      </div>
+
+      <section class="periods-card">
+        <div class="periods-header">
+          <div>
+            <h3>תקופות שירות ועבודה</h3>
+            <div class="periods-sub">
+              יש להזין את כל תקופות השירות כולל השירות הנוכחי במשטרת ישראל ולציין את חלקיות המשרה בכל תקופה
+            </div>
+          </div>
+          <span class="pill" id="totalYearsPill">סה״כ שנות שירות מוכרות (מותאם חלקיות): 0.00</span>
+        </div>
+
+        <div class="period-type-row">
+          <div class="period-type-header">
+            <div class="period-type-header-left">
+              <label><input type="checkbox" data-type="army" /> שירות בצה"ל חובה</label>
+              <span class="help-dot">?
+                <span class="tooltip">
+שירות חובה בצה"ל יוכר לצורך גמלאות עבור מי ששירת 10 שנות שירות לפחות בכוחות הבטחון וגוייס למשטרה עד 31.12.2000
+                </span>
+              </span>
+            </div>
+          </div>
+          <div class="period-type-form" data-type="army">
+            <div class="period-type-grid">
+              <div class="field"><label for="army_start">תאריך התחלה</label><input id="army_start" type="text" inputmode="numeric" placeholder="1.1.1989" /></div>
+              <div class="field"><label for="army_end">תאריך סיום</label><input id="army_end" type="text" inputmode="numeric" placeholder="31.3.1990" /></div>
+              <div class="field"><label for="army_percent">חלקיות משרה (%)</label><input id="army_percent" type="number" min="1" max="200" placeholder="100" /></div>
+              <div class="field"><label>&nbsp;</label><button type="button" class="small-btn add-btn" data-type="army">הוסף תקופה</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="period-type-row">
+          <div class="period-type-header">
+            <div class="period-type-header-left">
+              <label><input type="checkbox" data-type="prev" /> שירות במקום עבודה קודם המוכר לגמלאות</label>
+            </div>
+          </div>
+
+          <div class="period-type-form" data-type="prev">
+            <div class="period-type-grid">
+              <div class="field"><label for="prev_start">תאריך התחלה</label><input id="prev_start" type="text" inputmode="numeric" placeholder="1/1/2000" /></div>
+              <div class="field"><label for="prev_end">תאריך סיום</label><input id="prev_end" type="text" inputmode="numeric" placeholder="31/12/2005" /></div>
+              <div class="field"><label for="prev_percent">חלקיות משרה (%)</label><input id="prev_percent" type="number" min="1" max="200" placeholder="100" /></div>
+              <div class="field"><label>&nbsp;</label><button type="button" class="small-btn add-btn" data-type="prev">הוסף תקופה</button></div>
+            </div>
+
+            <div style="margin-top:10px; display:flex; align-items:center; gap:10px; font-size:13px; color:#344563;">
+              <label style="display:flex; align-items:center; gap:8px; font-weight:800;">
+                <input type="checkbox" id="prev_is_prison" />
+                תקופה זו היא שירות שב״ס בפועל (לצורך 100א/100א מיוחד)
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="period-type-row">
+          <div class="period-type-header">
+            <div class="period-type-header-left">
+              <label><input type="checkbox" data-type="police" /> שירות נוכחי במשטרת ישראל</label>
+            </div>
+          </div>
+          <div class="period-type-form" data-type="police">
+            <div class="period-type-grid">
+              <div class="field"><label for="police_start">תאריך התחלה</label><input id="police_start" type="text" inputmode="numeric" placeholder="4.7.1993" /></div>
+              <div class="field"><label for="police_end">תאריך סיום</label><input id="police_end" type="text" inputmode="numeric" placeholder="31.3.2027" /></div>
+              <div class="field"><label for="police_percent">חלקיות משרה (%)</label><input id="police_percent" type="number" min="1" max="200" placeholder="100" /></div>
+              <div class="field"><label>&nbsp;</label><button type="button" class="small-btn add-btn" data-type="police">הוסף תקופה</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="period-type-row">
+          <div class="period-type-header">
+            <div class="period-type-header-left">
+              <label><input type="checkbox" data-type="absence" /> תקופות היעדרות בשירות הנוכחי במשטרת ישראל שנרכשו לגמלאות</label>
+              <span class="help-dot">?
+                <span class="tooltip">
+יש להזין תקופות היעדרות שנרכשו כגון חל"ת ו/או חלדל"ד
+                </span>
+              </span>
+            </div>
+          </div>
+          <div class="period-type-form" data-type="absence">
+            <div class="period-type-grid">
+              <div class="field"><label for="absence_start">תאריך התחלה</label><input id="absence_start" type="text" inputmode="numeric" placeholder="1.1.2020" /></div>
+              <div class="field"><label for="absence_end">תאריך סיום</label><input id="absence_end" type="text" inputmode="numeric" placeholder="31.1.2020" /></div>
+              <div class="field"><label for="absence_percent">חלקיות משרה (%)</label><input id="absence_percent" type="number" min="1" max="200" placeholder="100" /></div>
+              <div class="field"><label>&nbsp;</label><button type="button" class="small-btn add-btn" data-type="absence">הוסף תקופה</button></div>
+            </div>
+          </div>
+        </div>
+
+        <table class="periods-table" id="periodsTable">
+          <thead>
+            <tr>
+              <th>סוג תקופה</th>
+              <th>התחלה</th>
+              <th>סיום</th>
+              <th>חלקיות</th>
+              <th>חודשים מוכרים (כלל 15/16)</th>
+              <th>שנים מוכרות (מותאם)</th>
+              <th>פעולות</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+
+      <div class="calc-actions">
+        <button class="primary-btn" id="calcBtn">חשב קצבה ופנסיה</button>
+        <button class="secondary-btn" id="resetBtn">איפוס</button>
+      </div>
+
+      <div class="result-box" id="resultBox">
+        <div class="result-title">התוצאה תופיע כאן לאחר חישוב.</div>
+        אפשר לערוך תקופות בכל רגע (כפתור "ערוך" ליד כל שורה) ואז להריץ שוב.
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  // ---- כללים (שומרים על אותה לוגיקה שהוגדרה) ----
+  const BASE_RATE = 0.02;
+  const CAP_NON_ARMY = 0.70;
+  const MFKAL_MAX = 0.06;
+
+  const salaryInput      = document.getElementById("f_salary");
+  const birthdateInput   = document.getElementById("f_birthdate");
+  const joinDateInput    = document.getElementById("f_join_date");
+  const retireDateInput  = document.getElementById("f_retire_date");
+  const pensionTypeInput = document.getElementById("f_pension_type");
+  const retireCauseInput = document.getElementById("f_retire_cause");
+
+  const periodsTableBody = document.getElementById("periodsTable").querySelector("tbody");
+  const totalYearsPill   = document.getElementById("totalYearsPill");
+
+  const calcBtn  = document.getElementById("calcBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const resultBox = document.getElementById("resultBox");
+
+  const prevIsPrisonEl = document.getElementById("prev_is_prison");
+
+  let periods = [];
+  let idCounter = 1;
+  let inlineEditId = null;
+
+  // ---------- תאריך "חופשי" ----------
+  function parseLooseDateToISO(input){
+    if (!input) return null;
+    let s = String(input).trim();
+    if (!s) return null;
+    s = s.replace(/\s+/g,'');
+    s = s.replace(/[-]/g,'.').replace(/[\/]/g,'.');
+
+    if (!s.includes('.')){
+      const digits = s.replace(/\D/g,'');
+      if (digits.length === 8){
+        const dd = digits.slice(0,2), mm = digits.slice(2,4), yyyy = digits.slice(4,8);
+        return validateAndISO(dd, mm, yyyy);
+      }
+      if (digits.length === 6){
+        const dd = digits.slice(0,2), mm = digits.slice(2,4), yy = digits.slice(4,6);
+        const yyyy = twoDigitYearToFour(yy);
+        return validateAnd_nt(dd, mm, yyyy);
+      }
+      return null;
+    }
+
+    const parts = s.split('.').filter(Boolean);
+    if (parts.length !== 3) return null;
+
+    let [d, m, y] = parts;
+    d = d.replace(/\D/g,''); m = m.replace(/\D/g,''); y = y.replace(/\D/g,'');
+    if (!d || !m || !y) return null;
+
+    if (y.length === 2) y = twoDigitYearToFour(y);
+    if (y.length !== 4) return null;
+
+    return validateAndISO(d, m, y);
+  }
+
+  function validateAnd_nt(dd, mm, yyyy){ return validateAndISO(dd, mm, yyyy); }
+
+  function twoDigitYearToFour(yy){
+    const n = parseInt(yy,10);
+    return (n <= 49 ? 2000 + n : 1900 + n).toString();
+  }
+
+  function validateAndISO(dd, mm, yyyy){
+    const d = parseInt(dd,10), m = parseInt(mm,10), y = parseInt(yyyy,10);
+    if (!Number.isFinite(d) || !Number.isFinite(m) || !Number.isFinite(y)) return null;
+    if (y < 1900 || y > 2100) return null;
+    if (m < 1 || m > 12) return null;
+    const lastDay = new Date(y, m, 0).getDate();
+    if (d < 1 || d > lastDay) return null;
+    return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  }
+
+  function formatDateFromISO(iso){
+    if (!iso) return "-";
+    const d = new Date(iso + "T00:00:00");
+    if (isNaN(d.getTime())) return "-";
+    return d.toLocaleDateString("he-IL");
+  }
+
+  function formatCurrency(n){
+    return (n || 0).toLocaleString("he-IL", { maximumFractionDigits: 0 });
+  }
+
+  function typeLabel(t){
+    switch(t){
+      case "army": return 'שירות בצה"ל חובה';
+      case "prev": return "שירות במקום עבודה קודם המוכר לגמלאות";
+      case "police": return "שירות נוכחי במשטרת ישראל";
+      case "absence": return "תקופות היעדרות שנרכשו לגמלאות";
+      default: return t || "-";
+    }
+  }
+
+  // ---------- חישוב חודשים לפי כלל 15/16 ----------
+  function addMonthsClamped(date, monthsToAdd){
+    const y = date.getFullYear();
+    const m = date.getMonth();
+    const d = date.getDate();
+    const targetMonth = m + monthsToAdd;
+    const lastDay = new Date(y, targetMonth + 1, 0).getDate();
+    return new Date(y, targetMonth, Math.min(d, lastDay));
+  }
+  function diffDays(a, b){
+    return Math.floor((b - a) / (1000*60*60*24));
+  }
+  function recognizedMonths15_16(startISO, endISO){
+    if (!startISO || !endISO) return 0;
+    const s = new Date(startISO + "T00:00:00");
+    const e = new Date(endISO   + "T00:00:00");
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return 0;
+    if (e < s) return 0;
+
+    let months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+    const anchor = addMonthsClamped(s, months);
+    if (anchor > e) months -= 1;
+
+    const anchor2 = addMonthsClamped(s, months);
+    const remainderDays = diffDays(anchor2, e);
+    if (remainderDays >= 16) months += 1;
+
+    return Math.max(0, months);
+  }
+  function recognizedYearsAdjusted(startISO, endISO, percent){
+    const months = recognizedMonths15_16(startISO, endISO);
+    return (months / 12.0) * ((percent || 0) / 100.0);
+  }
+  function recognizedYearsGross(startISO, endISO){
+    const months = recognizedMonths15_16(startISO, endISO);
+    return months / 12.0;
+  }
+
+  function yearsDiff(dateA, dateB){
+    const diff = dateB - dateA;
+    if (diff <= 0) return 0;
+    return diff / (1000*60*60*24*365.25);
+  }
+
+  function refreshPill(){
+    let totalEq = 0;
+    periods.forEach(p => totalEq += recognizedYearsAdjusted(p.startISO, p.endISO, p.percent));
+    totalYearsPill.textContent = `סה״כ שנות שירות מוכרות (מותאם חלקיות): ${totalEq.toFixed(2)}`;
+  }
+
+  // ---------- tooltips ----------
+  document.querySelectorAll(".help-dot").forEach(dot => {
+    dot.addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.querySelectorAll(".help-dot.open").forEach(d => { if (d !== dot) d.classList.remove("open"); });
+      dot.classList.toggle("open");
+    });
+  });
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".help-dot.open").forEach(d => d.classList.remove("open"));
+  });
+
+  // ---------- פתיחה/סגירה של טפסי הוספה ----------
+  document.querySelectorAll("input[type='checkbox'][data-type]").forEach(cb => {
+    cb.addEventListener("change", () => {
+      const type = cb.dataset.type;
+      const form = document.querySelector(".period-type-form[data-type='" + type + "']");
+      if (form) form.style.display = cb.checked ? "block" : "none";
+      if (type === "prev" && !cb.checked && prevIsPrisonEl) prevIsPrisonEl.checked = false;
+    });
+  });
+
+  // ---------- הוספת תקופה ----------
+  document.querySelectorAll(".add-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const type = btn.dataset.type;
+      const startEl = document.getElementById(type + "_start");
+      const endEl   = document.getElementById(type + "_end");
+      const perEl   = document.getElementById(type + "_percent");
+
+      const startISO = startEl ? parseLooseDateToISO(startEl.value) : null;
+      const endISO   = endEl ? parseLooseDateToISO(endEl.value) : null;
+      const percent = perEl ? parseFloat(perEl.value) : NaN;
+
+      if (!startISO || !endISO){ alert("נא להזין תאריך התחלה ותאריך סיום בפורמט תקין."); return; }
+      if (isNaN(percent) || percent <= 0){ alert("נא להזין חלקיות משרה תקינה (50/75/100/150)."); return; }
+
+      const months = recognizedMonths15_16(startISO, endISO);
+      if (months <= 0){ alert("התקופה אינה מזכה (פחות מחודש / שארית 15 ימים ומטה)."); return; }
+
+      const isPrisonActual = (type === "prev") ? !!(prevIsPrisonEl && prevIsPrisonEl.checked) : false;
+
+      periods.push({ id: idCounter++, type, startISO, endISO, percent, isPrisonActual });
+
+      if (startEl) startEl.value = "";
+      if (endEl) endEl.value = "";
+      if (perEl) perEl.value = "";
+      if (type === "prev" && prevIsPrisonEl) prevIsPrisonEl.checked = false;
+
+      renderTable();
+    });
+  });
+
+  // ---------- טבלה + עריכה Inline ----------
+  function renderTable(){
+    periodsTableBody.innerHTML = "";
+
+    periods.forEach(p => {
+      const months = recognizedMonths15_16(p.startISO, p.endISO);
+      const eqYears = recognizedYearsAdjusted(p.startISO, p.endISO, p.percent);
+
+      const tr = document.createElement("tr");
+
+      if (inlineEditId === p.id){
+        tr.innerHTML = `
+          <td data-label="סוג תקופה">${typeLabel(p.type)}</td>
+          <td data-label="התחלה"><input class="inline-input" data-k="start" inputmode="numeric" value="${formatDateFromISO(p.startISO)}"></td>
+          <td data-label="סיום"><input class="inline-input" data-k="end" inputmode="numeric" value="${formatDateFromISO(p.endISO)}"></td>
+          <td data-label="חלקיות"><input class="inline-input" data-k="pct" type="number" min="1" max="200" value="${p.percent}"></td>
+          <td data-label="חודשים מוכרים">${months}</td>
+          <td data-label="שנים מוכרות">${eqYears.toFixed(2)}</td>
+          <td class="table-actions" data-label="פעולות">
+            <button class="primary" data-act="save">שמור</button>
+            <button data-act="cancel">ביטול</button>
+            <button data-act="del">מחק</button>
+          </td>
+        `;
+
+        tr.querySelector("[data-act='save']").addEventListener("click", () => {
+          const sVal = tr.querySelector("[data-k='start']").value;
+          const eVal = tr.querySelector("[data-k='end']").value;
+          const pVal = tr.querySelector("[data-k='pct']").value;
+
+          const startISO = parseLooseDateToISO(sVal);
+          const endISO   = parseLooseDateToISO(eVal);
+          const percent  = parseFloat(pVal);
+
+          if (!startISO || !endISO){ alert("תאריכים לא תקינים."); return; }
+          if (isNaN(percent) || percent <= 0){ alert("חלקיות משרה לא תקינה."); return; }
+
+          const m = recognizedMonths15_16(startISO, endISO);
+          if (m <= 0){ alert("התקופה אינה מזכה (פחות מחודש / שארית 15 ימים ומטה)."); return; }
+
+          periods = periods.map(x => x.id === p.id ? ({...x, startISO, endISO, percent}) : x);
+          inlineEditId = null;
+          renderTable();
+        });
+
+        tr.querySelector("[data-act='cancel']").addEventListener("click", () => {
+          inlineEditId = null;
+          renderTable();
+        });
+
+        tr.querySelector("[data-act='del']").addEventListener("click", () => {
+          periods = periods.filter(x => x.id !== p.id);
+          inlineEditId = null;
+          renderTable();
+        });
+
+        periodsTableBody.appendChild(tr);
+        return;
+      }
+
+      tr.innerHTML = `
+        <td data-label="סוג תקופה">${typeLabel(p.type)}</td>
+        <td data-label="התחלה">${formatDateFromISO(p.startISO)}</td>
+        <td data-label="סיום">${formatDateFromISO(p.endISO)}</td>
+        <td data-label="חלקיות">${(p.percent || 0).toFixed(0)}%</td>
+        <td data-label="חודשים מוכרים">${months}</td>
+        <td data-label="שנים מוכרות">${eqYears.toFixed(2)}</td>
+        <td class="table-actions" data-label="פעולות">
+          <button data-act="edit">ערוך</button>
+          <button data-act="del">מחק</button>
+        </td>
+      `;
+
+      tr.querySelector("[data-act='edit']").addEventListener("click", () => {
+        inlineEditId = p.id;       // זמין תמיד – גם לפני הרצה ראשונה
+        renderTable();
+      });
+
+      tr.querySelector("[data-act='del']").addEventListener("click", () => {
+        periods = periods.filter(x => x.id !== p.id);
+        if (inlineEditId === p.id) inlineEditId = null;
+        renderTable();
+      });
+
+      periodsTableBody.appendChild(tr);
+    });
+
+    refreshPill();
+  }
+
+  // ---------- חישוב ----------
+  calcBtn.addEventListener("click", () => {
+    const salary = parseFloat(String(salaryInput.value || "").replace(",", "."));
+    const pensionType = pensionTypeInput.value;
+    const retireCause = retireCauseInput.value;
+
+    const birthISO  = parseLooseDateToISO(birthdateInput.value);
+    const joinISO   = parseLooseDateToISO(joinDateInput.value);
+    const retireISO = parseLooseDateToISO(retireDateInput.value);
+
+    if (!Number.isFinite(salary) || salary <= 0 || !birthISO || !joinISO || !retireISO || !retireCause){
+      resultBox.innerHTML =
+        `<div class="result-title">נתונים חסרים.</div>` +
+        `נא להזין: משכורת קובעת, תאריך לידה, תאריך גיוס אחרון, תאריך פרישה משוער, ועילת פרישה.`;
+      return;
+    }
+    if (periods.length === 0){
+      resultBox.innerHTML =
+        `<div class="result-title">לא הוזנו תקופות שירות.</div>` +
+        `נא להזין לפחות תקופת שירות אחת.`;
+      return;
+    }
+
+    const birth  = new Date(birthISO + "T00:00:00");
+    const retire = new Date(retireISO + "T00:00:00");
+    if (isNaN(birth.getTime()) || isNaN(retire.getTime())){
+      resultBox.innerHTML =
+        `<div class="result-title">תאריכים לא תקינים.</div>` +
+        `נא לבדוק תאריך לידה / פרישה.`;
+      return;
+    }
+
+    const now = new Date();
+    const ageNow = yearsDiff(birth, now);
+    const ageAtRetire = yearsDiff(birth, retire);
+
+    let eqArmy = 0, eqPrev = 0, eqPolice = 0, eqAbsence = 0;
+
+    // בפועל (לזכאות 15 שנים) + חישוב רכיבי 100א/מיוחד רק לפי שירות בפועל במשטרה/שב"ס
+    let actualPolicePrisonYearsForEligibility = 0;
+    let actualGross100 = 0;
+    let actualGross150 = 0;
+
+    periods.forEach(p => {
+      const adj = recognizedYearsAdjusted(p.startISO, p.endISO, p.percent);
+
+      if (p.type === "army") eqArmy += adj;
+      if (p.type === "prev") eqPrev += adj;
+      if (p.type === "police") eqPolice += adj;
+      if (p.type === "absence") eqAbsence += adj;
+
+      const isActualForMfkal = (p.type === "police") || (p.type === "prev" && p.isPrisonActual === true);
+      if (isActualForMfkal){
+        const gross = recognizedYearsGross(p.startISO, p.endISO);
+        actualPolicePrisonYearsForEligibility += gross;
+
+        if (Math.abs((p.percent || 0) - 100) < 0.5) actualGross100 += gross;
+        if (Math.abs((p.percent || 0) - 150) < 0.5) actualGross150 += gross;
+      }
+    });
+
+    const totalEqRecognized = eqArmy + eqPrev + eqPolice + eqAbsence;
+
+    // תקרה 70% ללא צה"ל חובה
+    const nonArmyEq = eqPrev + eqPolice + eqAbsence;
+    const nonArmyBasePercentRaw = nonArmyEq * BASE_RATE;
+    const nonArmyBasePercent = Math.min(nonArmyBasePercentRaw, CAP_NON_ARMY);
+
+    const armyPercent = eqArmy * BASE_RATE;
+    const basePensionPercent = nonArmyBasePercent + armyPercent;
+
+    // זכאות מפכ"ל: 15 שנות שירות בפועל + (ור"ם או גיל 50)
+    const meets15Years = actualPolicePrisonYearsForEligibility >= 15.0 - 1e-9;
+    const meetsCauseOrAge50 = (retireCause === "varam") || (ageAtRetire >= 50.0 - 1e-9);
+    const eligibleMfkal = meets15Years && meetsCauseOrAge50;
+
+    let mfkalCalculated = 0;
+    if (eligibleMfkal){
+      mfkalCalculated = (actualGross100 * 0.02) + (actualGross150 * 0.03);
+    }
+
+    // מפכ"ל עד 6% ובתקרה שמביאה עד 70% על רכיב לא-צה"ל
+    const roomTo70 = Math.max(0, CAP_NON_ARMY - nonArmyBasePercent);
+    const mfkalApplied = Math.min(mfkalCalculated, MFKAL_MAX, roomTo70);
+
+    // אחוז קצבה כולל הגדלת מפכ"ל (כמו שביקשת)
+    const totalPensionPercent = basePensionPercent + mfkalApplied;
+    const monthlyPension = salary * totalPensionPercent;
+
+    const pensionTypeText = pensionType === "budget" ? "פנסיה תקציבית" : "פנסיה צוברת";
+
+    const out =
+`סוג פנסיה: ${pensionTypeText}
+תאריך פרישה משוער: ${formatDateFromISO(retireISO)}
+גיל נוכחי: ${ageNow.toFixed(1)}
+גיל במועד הפרישה: ${ageAtRetire.toFixed(1)}
+
+סיכום תקופות השירות:
+שנות שירות בצה"ל חובה: ${eqArmy.toFixed(2)}
+שנות שירות במקום עבודה קודם: ${eqPrev.toFixed(2)}
+שנות שירות נוכחי במשטרת ישראל: ${eqPolice.toFixed(2)}
+שנות שירות אחר המוכר לגמלאות: ${eqAbsence.toFixed(2)}
+סה"כ שנות שירות המוכרות לגמלאות: ${totalEqRecognized.toFixed(2)}
+
+אחוז קצבה בהתאם לשקלול חלקיות (כולל הגדלת מפכ"ל): ${(totalPensionPercent*100).toFixed(2)}%
+מתוכו אחוז הגדלת מפכ"ל 100א'/100א' מיוחד: ${(mfkalApplied*100).toFixed(2)}%
+
+משכורת קובעת: ₪${formatCurrency(salary)}
+פנסיה חודשית משוערת ברוטו*: ₪${formatCurrency(monthlyPension)}
+`;
+
+    const lines = out.split("\n").map(line => {
+      if (line.startsWith('סה"כ שנות שירות המוכרות לגמלאות:')) return "★ " + line + " ★";
+      return line;
+    }).join("\n");
+
+    resultBox.innerHTML =
+      `<div class="result-title">תוצאות החישוב</div>` +
+      lines.replaceAll("\n", "<br/>") +
+      `<div class="footnote">* הנתון המוצג אינו כולל תוספת ותק ומקדם יוקר.</div>` +
+      `<div class="footnote">התחשיב האמור הינו משוער בלבד ואינו משמש כתחליף לסימולטור הרשמי או לבדיקה פרטנית במרכז פרישה.</div>`;
+  });
+
+  // ---------- איפוס ----------
+  resetBtn.addEventListener("click", () => {
+    salaryInput.value = "";
+    birthdateInput.value = "";
+    joinDateInput.value = "";
+    retireDateInput.value = "";
+    pensionTypeInput.value = "budget";
+    retireCauseInput.value = "";
+
+    periods = [];
+    idCounter = 1;
+    inlineEditId = null;
+
+    document.querySelectorAll("input[type='checkbox'][data-type]").forEach(cb => cb.checked = false);
+    document.querySelectorAll(".period-type-form").forEach(form => form.style.display = "none");
+
+    ["army","prev","police","absence"].forEach(t => {
+      const s = document.getElementById(t+"_start");
+      const e = document.getElementById(t+"_end");
+      const p = document.getElementById(t+"_percent");
+      if (s) s.value = "";
+      if (e) e.value = "";
+      if (p) p.value = "";
+    });
+    if (prevIsPrisonEl) prevIsPrisonEl.checked = false;
+
+    resultBox.innerHTML =
+      `<div class="result-title">התוצאה תופיע כאן לאחר חישוב.</div>` +
+      `אפשר לערוך תקופות בכל רגע (כפתור "ערוך" ליד כל שורה) ואז להריץ שוב.`;
+
+    renderTable();
+  });
+
+  // init
+  renderTable();
+</script>
+</body>
+</html>
