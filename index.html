@@ -46,9 +46,23 @@
 
     .calc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;font-size:14.5px;}
     .field{display:flex;flex-direction:column;gap:6px;}
-    .field label{font-size:13.5px;color:#344563;}
+    .field label{font-size:13.5px;color:#344563; display:flex; align-items:center; gap:6px;}
     .field input,.field select{border-radius:10px;border:1px solid var(--line2);padding:10px 10px;font-size:15.5px;background:white;}
     .field small{font-size:12.5px;color:var(--muted2);}
+
+    /* Date Picker Wrapper */
+    .date-wrapper { display: flex; align-items: stretch; gap: 6px; }
+    .date-wrapper input[type="text"] { flex: 1; min-width: 0; }
+    .date-picker-btn {
+      position: relative; width: 44px; flex: 0 0 44px;
+      border: 1px solid var(--line2); border-radius: 10px; background: #fff;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      font-size: 20px; overflow: hidden;
+    }
+    .date-picker-btn::after { content: "📅"; }
+    .date-picker-btn input[type="date"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
 
     .periods-card{background:rgba(255,255,255,0.96);border-radius:16px;padding:12px;border:1px solid var(--line);display:flex;flex-direction:column;gap:10px;}
     .periods-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
@@ -61,9 +75,9 @@
     .period-type-header-left{display:flex;align-items:center;gap:10px;font-size:13.8px;font-weight:800;flex-wrap:wrap;}
 
     .help-dot{width:22px;height:22px;border-radius:999px;border:1px solid #c1c7d0;background:white;color:#344563;display:inline-flex;align-items:center;justify-content:center;
-      font-weight:900;cursor:pointer;position:relative;flex:0 0 auto;user-select:none;}
+      font-weight:900;cursor:pointer;position:relative;flex:0 0 auto;user-select:none; font-size:13px;}
     .tooltip{position:absolute;top:28px;right:0;width:min(560px,86vw);max-height:60vh;overflow:auto;background:white;border:1px solid #dfe4ee;
-      box-shadow:0 10px 24px rgba(9,30,66,0.18);border-radius:12px;padding:10px 12px;font-size:12.5px;color:#253858;line-height:1.35;display:none;z-index:50;white-space:pre-line;}
+      box-shadow:0 10px 24px rgba(9,30,66,0.18);border-radius:12px;padding:10px 12px;font-size:12.5px;color:#253858;line-height:1.35;display:none;z-index:50;white-space:pre-line; font-weight:normal;}
     .help-dot.open .tooltip{display:block;}
 
     .period-type-form{display:none;margin-top:10px;}
@@ -110,9 +124,9 @@
   <div class="header-content">
     <div class="header-text">
       <div class="logo-text">משטרת ישראל</div>
-      <div class="tagline">מחשבון פרישה</div>
+      <div class="tagline">מחשבון פרישה – אומדן קצבה לפי החוקה</div>
     </div>
-    <div class="ai-pill"><div class="ai-dot"></div> חישוב קצבה ופנסיה</div>
+    <div class="ai-pill"><div class="ai-dot"></div> חישוב ותק, קצבה והגדלות מפכ״ל</div>
   </div>
 </header>
 
@@ -120,10 +134,12 @@
   <section class="intro-card">
     <div class="intro-title">אומדן פרישה וקצבה</div>
     <div class="intro-subtitle">
-      יש להזין תאריכים בפורמט מלא ולהוסיף תקופות שירות
+      יש להזין תאריכים בפורמט מלא ולהוסיף תקופות שירות אותן ניתן לקבל בדו"ח מהאמ"ש היחידתי.
+      ניתן להקליד תאריך (לדוגמה: 01.01.2020) או ללחוץ על האייקון 📅 לבחירה מיומן.
     </div>
     <div class="hint">
-      לאחר הזנת הפרטים לחץ: "חשב קצבה ופנסיה"
+      תקרת 70% חלה על: שירות נוכחי במשטרה + מקומות עבודה קודמים + תקופות היעדרות שנרכשו.
+      ניתן לחרוג מ-70% רק בגין שירות חובה בצה״ל.
     </div>
   </section>
 
@@ -136,23 +152,43 @@
 
       <div class="calc-grid">
         <div class="field">
-          <label for="f_salary">משכורת קובעת (₪)</label>
+          <label for="f_salary">
+            משכורת קובעת (₪)
+            <span class="help-dot">?
+              <span class="tooltip">הנתון נמצא בתלוש השכר בצד ימין תחת נתוני עזר. חשוב להסתכל על תלוש ללא תוספות שכר חד פעמיות כמו מענק יובל.</span>
+            </span>
+          </label>
           <input id="f_salary" type="number" min="0" placeholder="לדוגמה: 24,382" inputmode="numeric" />
         </div>
 
         <div class="field">
           <label for="f_birthdate">תאריך לידה</label>
-          <input id="f_birthdate" type="text" placeholder="1.1.1990 / 01/01/90" />
+          <div class="date-wrapper">
+            <input id="f_birthdate" type="text" placeholder="01.01.1990" />
+            <div class="date-picker-btn">
+              <input type="date" onchange="syncDate(this)" />
+            </div>
+          </div>
         </div>
 
         <div class="field">
           <label for="f_join_date">תאריך גיוס אחרון למשטרה</label>
-          <input id="f_join_date" type="text" placeholder="15.7.2010" />
+          <div class="date-wrapper">
+            <input id="f_join_date" type="text" placeholder="15.07.2010" />
+            <div class="date-picker-btn">
+              <input type="date" onchange="syncDate(this)" />
+            </div>
+          </div>
         </div>
 
         <div class="field">
           <label for="f_retire_date">תאריך פרישה משוער</label>
-          <input id="f_retire_date" type="text" placeholder="31.1.2027" />
+          <div class="date-wrapper">
+            <input id="f_retire_date" type="text" placeholder="31.01.2027" />
+            <div class="date-picker-btn">
+              <input type="date" onchange="syncDate(this)" />
+            </div>
+          </div>
         </div>
 
         <div class="field">
@@ -183,7 +219,7 @@
               יש להזין את כל תקופות השירות כולל השירות הנוכחי במשטרת ישראל ולציין את חלקיות המשרה בכל תקופה
             </div>
           </div>
-          <span class="pill" id="totalYearsPill">במידה ומשהו לא ברור, ניתן ללחוץ על סימן השאלה</span>
+          <span class="pill" id="totalYearsPill">סה״כ שנות שירות מוכרות (מותאם חלקיות): 0.00</span>
         </div>
 
         <div class="period-type-row">
@@ -199,8 +235,20 @@
           </div>
           <div class="period-type-form" data-type="army">
             <div class="period-type-grid">
-              <div class="field"><label for="army_start">תאריך התחלה</label><input id="army_start" type="text" placeholder="1.1.1989" /></div>
-              <div class="field"><label for="army_end">תאריך סיום</label><input id="army_end" type="text" placeholder="31.3.1990" /></div>
+              <div class="field">
+                <label for="army_start">תאריך התחלה</label>
+                <div class="date-wrapper">
+                  <input id="army_start" type="text" placeholder="01.01.1989" />
+                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
+                </div>
+              </div>
+              <div class="field">
+                <label for="army_end">תאריך סיום</label>
+                <div class="date-wrapper">
+                  <input id="army_end" type="text" placeholder="31.03.1990" />
+                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
+                </div>
+              </div>
               <div class="field"><label for="army_percent">חלקיות משרה (%)</label><input id="army_percent" type="number" min="1" max="200" placeholder="100" inputmode="numeric" /></div>
               <div class="field"><label>&nbsp;</label><button type="button" class="small-btn add-btn" data-type="army">הוסף תקופה</button></div>
             </div>
@@ -223,8 +271,20 @@
 
           <div class="period-type-form" data-type="prev">
             <div class="period-type-grid">
-              <div class="field"><label for="prev_start">תאריך התחלה</label><input id="prev_start" type="text" placeholder="1/1/2000" /></div>
-              <div class="field"><label for="prev_end">תאריך סיום</label><input id="prev_end" type="text" placeholder="31/12/2005" /></div>
+              <div class="field">
+                <label for="prev_start">תאריך התחלה</label>
+                <div class="date-wrapper">
+                  <input id="prev_start" type="text" placeholder="01.01.2000" />
+                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
+                </div>
+              </div>
+              <div class="field">
+                <label for="prev_end">תאריך סיום</label>
+                <div class="date-wrapper">
+                  <input id="prev_end" type="text" placeholder="31.12.2005" />
+                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
+                </div>
+              </div>
               <div class="field"><label for="prev_percent">חלקיות משרה (%)</label><input id="prev_percent" type="number" min="1" max="200" placeholder="100" inputmode="numeric" /></div>
               <div class="field"><label>&nbsp;</label><button type="button" class="small-btn add-btn" data-type="prev">הוסף תקופה</button></div>
             </div>
@@ -246,8 +306,20 @@
           </div>
           <div class="period-type-form" data-type="police">
             <div class="period-type-grid">
-              <div class="field"><label for="police_start">תאריך התחלה</label><input id="police_start" type="text" placeholder="4.7.1993" /></div>
-              <div class="field"><label for="police_end">תאריך סיום</label><input id="police_end" type="text" placeholder="31.3.2027" /></div>
+              <div class="field">
+                <label for="police_start">תאריך התחלה</label>
+                <div class="date-wrapper">
+                  <input id="police_start" type="text" placeholder="04.07.1993" />
+                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
+                </div>
+              </div>
+              <div class="field">
+                <label for="police_end">תאריך סיום</label>
+                <div class="date-wrapper">
+                  <input id="police_end" type="text" placeholder="31.03.2027" />
+                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
+                </div>
+              </div>
               <div class="field"><label for="police_percent">חלקיות משרה (%)</label><input id="police_percent" type="number" min="1" max="200" placeholder="100" inputmode="numeric" /></div>
               <div class="field"><label>&nbsp;</label><button type="button" class="small-btn add-btn" data-type="police">הוסף תקופה</button></div>
             </div>
@@ -267,8 +339,20 @@
           </div>
           <div class="period-type-form" data-type="absence">
             <div class="period-type-grid">
-              <div class="field"><label for="absence_start">תאריך התחלה</label><input id="absence_start" type="text" placeholder="1.1.2020" /></div>
-              <div class="field"><label for="absence_end">תאריך סיום</label><input id="absence_end" type="text" placeholder="31.1.2020" /></div>
+              <div class="field">
+                <label for="absence_start">תאריך התחלה</label>
+                <div class="date-wrapper">
+                  <input id="absence_start" type="text" placeholder="01.01.2020" />
+                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
+                </div>
+              </div>
+              <div class="field">
+                <label for="absence_end">תאריך סיום</label>
+                <div class="date-wrapper">
+                  <input id="absence_end" type="text" placeholder="31.01.2020" />
+                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
+                </div>
+              </div>
               <div class="field"><label for="absence_percent">חלקיות משרה (%)</label><input id="absence_percent" type="number" min="1" max="200" placeholder="100" inputmode="numeric" /></div>
               <div class="field"><label>&nbsp;</label><button type="button" class="small-btn add-btn" data-type="absence">הוסף תקופה</button></div>
             </div>
@@ -298,7 +382,7 @@
 
       <div class="result-box" id="resultBox">
         <div class="result-title">התוצאה תופיע כאן לאחר חישוב.</div>
-        אפשר לערוך תקופות בכל רגע (כפתור "ערוך" ליד כל שורה)
+        אפשר לערוך תקופות בכל רגע (כפתור "ערוך" ליד כל שורה) ואז להריץ שוב.
       </div>
     </div>
   </section>
@@ -326,6 +410,20 @@
   let periods = [];
   let idCounter = 1;
   let inlineEditId = null;
+
+  // Sync Date Picker -> Text Field
+  window.syncDate = function(picker) {
+    const dateVal = picker.value; // YYYY-MM-DD
+    if (!dateVal) return;
+    const [y, m, d] = dateVal.split("-");
+    const formatted = `${d}.${m}.${y}`;
+    // Find sibling text input in the same wrapper
+    const wrapper = picker.closest('.date-wrapper');
+    if (wrapper) {
+      const textInput = wrapper.querySelector('input[type="text"]');
+      if (textInput) textInput.value = formatted;
+    }
+  };
 
   function parseLooseDateToISO(input){
     if (!input) return null;
@@ -689,6 +787,8 @@
   });
 
   resetBtn.addEventListener("click", () => {
+    if (!confirm("האם השוטר באמת רוצה לאפס? לחיצה על המקש מוחקת את כל מה שרשום")) return;
+
     salaryInput.value = "";
     birthdateInput.value = "";
     joinDateInput.value = "";
@@ -711,6 +811,9 @@
       if (p) p.value = "";
     });
     if (prevIsPrisonEl) prevIsPrisonEl.checked = false;
+
+    // Reset dates in pickers as well
+    document.querySelectorAll("input[type='date']").forEach(d => d.value = "");
 
     resultBox.innerHTML =
       `<div class="result-title">התוצאה תופיע כאן לאחר חישוב.</div>` +
