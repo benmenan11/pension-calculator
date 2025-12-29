@@ -32,13 +32,16 @@
     .intro-subtitle{font-size:14.5px;color:var(--muted);line-height:1.35;}
     .hint{font-size:13px;color:var(--muted2);line-height:1.35;}
 
+    /* Removed overflow:hidden to allow tooltips to pop out */
     .calc-shell{background:#f7f8fb;box-shadow:0 8px 22px rgba(9,30,66,0.18);border-radius:18px;border:1px solid var(--line);padding:12px 14px 14px;
-      position:relative;overflow:hidden;display:flex;flex-direction:column;gap:12px;}
+      position:relative; display:flex;flex-direction:column;gap:12px;}
+    
     .calc-shell::before{content:"";position:absolute;inset:0;background-image:
       radial-gradient(circle at 0 0, rgba(0,0,0,0.04) 0, rgba(0,0,0,0.0) 55%),
       radial-gradient(circle at 100% 0, rgba(0,0,0,0.04) 0, rgba(0,0,0,0.0) 55%),
       repeating-linear-gradient(135deg, rgba(0,0,0,0.02), rgba(0,0,0,0.02) 6px, transparent 6px, transparent 12px);
-      opacity:0.7;pointer-events:none;}
+      opacity:0.7;pointer-events:none; border-radius:18px;}
+    
     .calc-inner{position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;}
     .calc-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
     .calc-title{font-size:15px;font-weight:800;}
@@ -46,7 +49,10 @@
 
     .calc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;font-size:14.5px;}
     .field{display:flex;flex-direction:column;gap:6px;}
-    .field label{font-size:13.5px;color:#344563; display:flex; align-items:center; gap:6px;}
+    /* Modified label styling to work with the wrapper */
+    .field label, .label-row label {font-size:13.5px;color:#344563; margin:0;}
+    .label-row {display:flex; align-items:center; gap:6px;}
+
     .field input,.field select{border-radius:10px;border:1px solid var(--line2);padding:10px 10px;font-size:15.5px;background:white;}
     .field small{font-size:12.5px;color:var(--muted2);}
 
@@ -74,10 +80,11 @@
     .period-type-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
     .period-type-header-left{display:flex;align-items:center;gap:10px;font-size:13.8px;font-weight:800;flex-wrap:wrap;}
 
+    /* Tooltip z-index increased */
     .help-dot{width:22px;height:22px;border-radius:999px;border:1px solid #c1c7d0;background:white;color:#344563;display:inline-flex;align-items:center;justify-content:center;
-      font-weight:900;cursor:pointer;position:relative;flex:0 0 auto;user-select:none; font-size:13px;}
+      font-weight:900;cursor:pointer;position:relative;flex:0 0 auto;user-select:none; font-size:13px; z-index: 100;}
     .tooltip{position:absolute;top:28px;right:0;width:min(560px,86vw);max-height:60vh;overflow:auto;background:white;border:1px solid #dfe4ee;
-      box-shadow:0 10px 24px rgba(9,30,66,0.18);border-radius:12px;padding:10px 12px;font-size:12.5px;color:#253858;line-height:1.35;display:none;z-index:50;white-space:pre-line; font-weight:normal;}
+      box-shadow:0 10px 24px rgba(9,30,66,0.18);border-radius:12px;padding:10px 12px;font-size:12.5px;color:#253858;line-height:1.35;display:none;z-index:9999;white-space:pre-line; font-weight:normal;}
     .help-dot.open .tooltip{display:block;}
 
     .period-type-form{display:none;margin-top:10px;}
@@ -152,12 +159,12 @@
 
       <div class="calc-grid">
         <div class="field">
-          <label for="f_salary">
-            משכורת קובעת (₪)
+          <div class="label-row">
+            <label for="f_salary">משכורת קובעת (₪)</label>
             <span class="help-dot">?
               <span class="tooltip">הנתון נמצא בתלוש השכר בצד ימין תחת נתוני עזר. חשוב להסתכל על תלוש ללא תוספות שכר חד פעמיות כמו מענק יובל.</span>
             </span>
-          </label>
+          </div>
           <input id="f_salary" type="number" min="0" placeholder="לדוגמה: 24,382" inputmode="numeric" />
         </div>
 
@@ -546,6 +553,7 @@
   document.querySelectorAll(".help-dot").forEach(dot => {
     dot.addEventListener("click", (e) => {
       e.stopPropagation();
+      e.preventDefault(); // Prevent label click from focusing input
       document.querySelectorAll(".help-dot.open").forEach(d => { if (d !== dot) d.classList.remove("open"); });
       dot.classList.toggle("open");
     });
