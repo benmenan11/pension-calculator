@@ -33,6 +33,7 @@
     .intro-subtitle{font-size:14.5px;color:var(--muted);line-height:1.35;}
     .hint{font-size:13px;color:var(--muted2);line-height:1.35;}
 
+    /* Removed overflow:hidden to allow tooltips to pop out safely */
     .calc-shell{background:#f7f8fb;box-shadow:0 8px 22px rgba(9,30,66,0.18);border-radius:18px;border:1px solid var(--line);padding:12px 14px 14px;
       position:relative; display:flex;flex-direction:column;gap:12px;}
     
@@ -52,13 +53,12 @@
     .field label, .label-row label {font-size:13.5px;color:#344563; margin:0;}
     .label-row {display:flex; align-items:center; gap:6px;}
 
-    /* Input Styling including error state */
+    /* Input Styling */
     .field input,.field select{border-radius:10px;border:1px solid var(--line2);padding:10px 10px;font-size:15.5px;background:white; transition: border-color 0.2s, background-color 0.2s;}
     .field input.input-error, .field select.input-error {
       border: 2px solid var(--error-border) !important;
       background-color: var(--error-bg) !important;
     }
-
     .field small{font-size:12.5px;color:var(--muted2);}
 
     /* Date Picker Wrapper */
@@ -85,21 +85,35 @@
     .period-type-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
     .period-type-header-left{display:flex;align-items:center;gap:10px;font-size:13.8px;font-weight:800;flex-wrap:wrap;}
 
-    /* Tooltip z-index increased & Image support */
-    .help-dot{width:22px;height:22px;border-radius:999px;border:1px solid #c1c7d0;background:white;color:#344563;display:inline-flex;align-items:center;justify-content:center;
-      font-weight:900;cursor:pointer;position:relative;flex:0 0 auto;user-select:none; font-size:13px; z-index: 100;}
-    .tooltip{position:absolute;top:28px;right:0;width:min(560px,86vw);max-height:60vh;overflow:auto;background:white;border:1px solid #dfe4ee;
-      box-shadow:0 10px 24px rgba(9,30,66,0.18);border-radius:12px;padding:10px 12px;font-size:12.5px;color:#253858;line-height:1.35;display:none;z-index:9999;white-space:pre-line; font-weight:normal;}
-    .help-dot.open .tooltip{display:block;}
-    
-    .tooltip img {
-      display: block;
-      max-width: 100%;
-      height: auto;
-      margin-top: 10px;
-      border-radius: 6px;
-      border: 1px solid #e1e4ea;
+    /* Tooltip Fixes for Mobile */
+    .help-dot{
+      width:22px; height:22px; border-radius:50%; border:1px solid #c1c7d0; background:white;
+      color:#344563; display:inline-flex; align-items:center; justify-content:center;
+      font-weight:900; cursor:pointer; position:relative; flex:0 0 auto; user-select:none; font-size:13px; z-index: 100;
     }
+    .tooltip {
+      position: absolute;
+      top: 32px;
+      right: -10px; /* Aligns comfortably to the right */
+      width: 270px; /* Fixed narrow width for mobile safety */
+      max-width: 80vw; /* Ensure it never exceeds screen width */
+      max-height: 50vh;
+      overflow-y: auto;
+      background: white;
+      border: 1px solid #dfe4ee;
+      box-shadow: 0 10px 30px rgba(9,30,66,0.25);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      color: #253858;
+      line-height: 1.4;
+      display: none;
+      z-index: 1000; /* Very high z-index to sit on top of everything */
+      white-space: pre-line;
+      font-weight: normal;
+      text-align: right;
+    }
+    .help-dot.open .tooltip{display:block;}
 
     .period-type-form{display:none;margin-top:10px;}
     .period-type-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:flex-end;}
@@ -177,10 +191,7 @@
             <label for="f_salary">משכורת קובעת (₪)</label>
             <span class="help-dot">?
               <span class="tooltip">
-                הנתון נמצא בתלוש השכר בצד ימין תחת "בסיסי שכר".
-                יש לחפש את השורה: "8807 משכורת קובעת".
-                חשוב להסתכל על תלוש ללא תוספות שכר חד פעמיות כמו מענק יובל.
-                <img src="1000098839.jpg" alt="דוגמה מתלוש השכר - משכורת קובעת" />
+                הנתון נמצא בתלוש השכר בצד ימין תחת נתוני עזר. חשוב להסתכל על תלוש ללא תוספות שכר חד פעמיות כמו מענק יובל.
               </span>
             </span>
           </div>
