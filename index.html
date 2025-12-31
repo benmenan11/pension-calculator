@@ -10,6 +10,7 @@
       --bg:#f1f3f6;
       --text:#0b2540; --muted:#4a6077; --muted2:#7a869a;
       --card:#ffffff; --line:#dde3ef; --line2:#c1c7d0; --blue1:#009dff; --blue2:#004a8f;
+      --error-bg:#fff0f0; --error-border:#d32f2f;
     }
     body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);
       display:flex;flex-direction:column;min-height:100vh;font-size:17px;}
@@ -32,7 +33,6 @@
     .intro-subtitle{font-size:14.5px;color:var(--muted);line-height:1.35;}
     .hint{font-size:13px;color:var(--muted2);line-height:1.35;}
 
-    /* Removed overflow:hidden to allow tooltips to pop out */
     .calc-shell{background:#f7f8fb;box-shadow:0 8px 22px rgba(9,30,66,0.18);border-radius:18px;border:1px solid var(--line);padding:12px 14px 14px;
       position:relative; display:flex;flex-direction:column;gap:12px;}
     
@@ -49,11 +49,16 @@
 
     .calc-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;font-size:14.5px;}
     .field{display:flex;flex-direction:column;gap:6px;}
-    /* Modified label styling to work with the wrapper */
     .field label, .label-row label {font-size:13.5px;color:#344563; margin:0;}
     .label-row {display:flex; align-items:center; gap:6px;}
 
-    .field input,.field select{border-radius:10px;border:1px solid var(--line2);padding:10px 10px;font-size:15.5px;background:white;}
+    /* Input Styling including error state */
+    .field input,.field select{border-radius:10px;border:1px solid var(--line2);padding:10px 10px;font-size:15.5px;background:white; transition: border-color 0.2s, background-color 0.2s;}
+    .field input.input-error, .field select.input-error {
+      border: 2px solid var(--error-border) !important;
+      background-color: var(--error-bg) !important;
+    }
+
     .field small{font-size:12.5px;color:var(--muted2);}
 
     /* Date Picker Wrapper */
@@ -80,12 +85,21 @@
     .period-type-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
     .period-type-header-left{display:flex;align-items:center;gap:10px;font-size:13.8px;font-weight:800;flex-wrap:wrap;}
 
-    /* Tooltip z-index increased */
+    /* Tooltip z-index increased & Image support */
     .help-dot{width:22px;height:22px;border-radius:999px;border:1px solid #c1c7d0;background:white;color:#344563;display:inline-flex;align-items:center;justify-content:center;
       font-weight:900;cursor:pointer;position:relative;flex:0 0 auto;user-select:none; font-size:13px; z-index: 100;}
     .tooltip{position:absolute;top:28px;right:0;width:min(560px,86vw);max-height:60vh;overflow:auto;background:white;border:1px solid #dfe4ee;
       box-shadow:0 10px 24px rgba(9,30,66,0.18);border-radius:12px;padding:10px 12px;font-size:12.5px;color:#253858;line-height:1.35;display:none;z-index:9999;white-space:pre-line; font-weight:normal;}
     .help-dot.open .tooltip{display:block;}
+    
+    .tooltip img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin-top: 10px;
+      border-radius: 6px;
+      border: 1px solid #e1e4ea;
+    }
 
     .period-type-form{display:none;margin-top:10px;}
     .period-type-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:flex-end;}
@@ -162,7 +176,12 @@
           <div class="label-row">
             <label for="f_salary">משכורת קובעת (₪)</label>
             <span class="help-dot">?
-              <span class="tooltip">הנתון נמצא בתלוש השכר בצד ימין תחת נתוני עזר. חשוב להסתכל על תלוש ללא תוספות שכר חד פעמיות כמו מענק יובל.</span>
+              <span class="tooltip">
+                הנתון נמצא בתלוש השכר בצד ימין תחת "בסיסי שכר".
+                יש לחפש את השורה: "8807 משכורת קובעת".
+                חשוב להסתכל על תלוש ללא תוספות שכר חד פעמיות כמו מענק יובל.
+                <img src="1000098839.jpg" alt="דוגמה מתלוש השכר - משכורת קובעת" />
+              </span>
             </span>
           </div>
           <input id="f_salary" type="number" min="0" placeholder="לדוגמה: 24,382" inputmode="numeric" />
@@ -218,7 +237,7 @@
         </div>
       </div>
 
-      <section class="periods-card">
+      <section class="periods-card" id="periodsSection">
         <div class="periods-header">
           <div>
             <h3>תקופות שירות ועבודה</h3>
@@ -424,13 +443,20 @@
     if (!dateVal) return;
     const [y, m, d] = dateVal.split("-");
     const formatted = `${d}.${m}.${y}`;
-    // Find sibling text input in the same wrapper
     const wrapper = picker.closest('.date-wrapper');
     if (wrapper) {
       const textInput = wrapper.querySelector('input[type="text"]');
-      if (textInput) textInput.value = formatted;
+      if (textInput) {
+        textInput.value = formatted;
+        textInput.classList.remove('input-error'); // remove error if user fixed it
+      }
     }
   };
+
+  // Remove error class on input
+  document.querySelectorAll('input, select').forEach(el => {
+    el.addEventListener('input', () => el.classList.remove('input-error'));
+  });
 
   function parseLooseDateToISO(input){
     if (!input) return null;
@@ -553,7 +579,7 @@
   document.querySelectorAll(".help-dot").forEach(dot => {
     dot.addEventListener("click", (e) => {
       e.stopPropagation();
-      e.preventDefault(); // Prevent label click from focusing input
+      e.preventDefault(); 
       document.querySelectorAll(".help-dot.open").forEach(d => { if (d !== dot) d.classList.remove("open"); });
       dot.classList.toggle("open");
     });
@@ -683,41 +709,85 @@
   }
 
   calcBtn.addEventListener("click", () => {
-    const salary = parseFloat(String(salaryInput.value || "").replace(",", "."));
+    // 1. Gather all values
+    const salaryVal = String(salaryInput.value || "").trim();
     const pensionType = pensionTypeInput.value;
     const retireCause = retireCauseInput.value;
 
-    const birthISO  = parseLooseDateToISO(birthdateInput.value);
-    const joinISO   = parseLooseDateToISO(joinDateInput.value);
-    const retireISO = parseLooseDateToISO(retireDateInput.value);
+    const birthStr = birthdateInput.value;
+    const joinStr = joinDateInput.value;
+    const retireStr = retireDateInput.value;
 
-    if (!Number.isFinite(salary) || salary <= 0 || !birthISO || !joinISO || !retireISO || !retireCause){
-      resultBox.innerHTML =
-        `<div class="result-title">נתונים חסרים.</div>` +
-        `נא להזין: משכורת קובעת, תאריך לידה, תאריך גיוס אחרון, תאריך פרישה משוער, ועילת פרישה.`;
-      return;
-    }
-    if (periods.length === 0){
-      resultBox.innerHTML =
-        `<div class="result-title">לא הוזנו תקופות שירות.</div>` +
-        `נא להזין לפחות תקופת שירות אחת.`;
-      return;
+    let hasError = false;
+
+    // 2. Validate Salary
+    const salary = parseFloat(salaryVal.replace(",", "."));
+    if (!salaryVal || !Number.isFinite(salary) || salary <= 0) {
+      salaryInput.classList.add('input-error');
+      hasError = true;
+    } else {
+      salaryInput.classList.remove('input-error');
     }
 
-    const birth  = new Date(birthISO + "T00:00:00");
+    // 3. Validate Main Dates
+    const birthISO = parseLooseDateToISO(birthStr);
+    if (!birthISO) { birthdateInput.classList.add('input-error'); hasError = true; } 
+    else birthdateInput.classList.remove('input-error');
+
+    const joinISO = parseLooseDateToISO(joinStr);
+    if (!joinISO) { joinDateInput.classList.add('input-error'); hasError = true; }
+    else joinDateInput.classList.remove('input-error');
+
+    const retireISO = parseLooseDateToISO(retireStr);
+    if (!retireISO) { retireDateInput.classList.add('input-error'); hasError = true; }
+    else retireDateInput.classList.remove('input-error');
+
+    // 4. Validate Cause
+    if (!retireCause) {
+      retireCauseInput.classList.add('input-error');
+      hasError = true;
+    } else {
+      retireCauseInput.classList.remove('input-error');
+    }
+
+    // 5. STOP if errors found
+    if (hasError) {
+      alert("יש לתקן את השדות המסומנים באדום (פורמט לא תקין או שדה חסר) לפני החישוב.");
+      resultBox.innerHTML = `<div class="result-title">שגיאה בנתונים.</div>נא לתקן את השדות המסומנים באדום.`;
+      return;
+    }
+
+    // 6. Logic Split based on Pension Type
+    const birth = new Date(birthISO + "T00:00:00");
     const retire = new Date(retireISO + "T00:00:00");
-    if (isNaN(birth.getTime()) || isNaN(retire.getTime())){
-      resultBox.innerHTML =
-        `<div class="result-title">תאריכים לא תקינים.</div>` +
-        `נא לבדוק תאריך לידה / פרישה.`;
-      return;
-    }
-
     const now = new Date();
     const ageNow = yearsDiff(birth, now);
     const ageAtRetire = yearsDiff(birth, retire);
-    let eqArmy = 0, eqPrev = 0, eqPolice = 0, eqAbsence = 0;
 
+    if (pensionType === "funded") {
+      // ---- FUNDED PENSION LOGIC (Simple) ----
+      resultBox.innerHTML = `
+        <div class="result-title">תוצאות החישוב (פנסיה צוברת)</div>
+        סוג פנסיה: פנסיה צוברת
+        תאריך פרישה משוער: ${formatDateFromISO(retireISO)}
+        גיל נוכחי: ${ageNow.toFixed(1)}
+        גיל במועד הפרישה: ${ageAtRetire.toFixed(1)}
+        
+        <div class="footnote">בפנסיה צוברת החיסכון והקצבה מנוהלים בקרן הפנסיה ולכן לא מוצגים אחוזי קצבה או שנות שירות בתקציבית.</div>
+      `;
+      return;
+    }
+
+    // ---- BUDGET PENSION LOGIC (Complex) ----
+    
+    // For budget pension, we MUST have periods
+    if (periods.length === 0){
+      alert("בפנסיה תקציבית חובה להזין לפחות תקופת שירות אחת.");
+      resultBox.innerHTML = `<div class="result-title">לא הוזנו תקופות שירות.</div>נא להזין לפחות תקופת שירות אחת בטבלה.`;
+      return;
+    }
+
+    let eqArmy = 0, eqPrev = 0, eqPolice = 0, eqAbsence = 0;
     let actualPolicePrisonYearsForEligibility = 0;
     let actualGross100 = 0;
     let actualGross150 = 0;
@@ -761,10 +831,8 @@
     const totalPensionPercent = basePensionPercent + mfkalApplied;
     const monthlyPension = salary * totalPensionPercent;
 
-    const pensionTypeText = pensionType === "budget" ? "פנסיה תקציבית" : "פנסיה צוברת";
-
     const out =
-`סוג פנסיה: ${pensionTypeText}
+`סוג פנסיה: פנסיה תקציבית
 תאריך פרישה משוער: ${formatDateFromISO(retireISO)}
 גיל נוכחי: ${ageNow.toFixed(1)}
 גיל במועד הפרישה: ${ageAtRetire.toFixed(1)}
@@ -822,6 +890,9 @@
 
     // Reset dates in pickers as well
     document.querySelectorAll("input[type='date']").forEach(d => d.value = "");
+
+    // Clear errors
+    document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
 
     resultBox.innerHTML =
       `<div class="result-title">התוצאה תופיע כאן לאחר חישוב.</div>` +
