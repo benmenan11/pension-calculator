@@ -33,7 +33,6 @@
     .intro-subtitle{font-size:14.5px;color:var(--muted);line-height:1.35;}
     .hint{font-size:13px;color:var(--muted2);line-height:1.35;}
 
-    /* Removed overflow:hidden to allow tooltips to pop out safely */
     .calc-shell{background:#f7f8fb;box-shadow:0 8px 22px rgba(9,30,66,0.18);border-radius:18px;border:1px solid var(--line);padding:12px 14px 14px;
       position:relative; display:flex;flex-direction:column;gap:12px;}
     
@@ -53,12 +52,21 @@
     .field label, .label-row label {font-size:13.5px;color:#344563; margin:0;}
     .label-row {display:flex; align-items:center; gap:6px;}
 
-    /* Input Styling */
+    /* Input Styling including error state */
     .field input,.field select{border-radius:10px;border:1px solid var(--line2);padding:10px 10px;font-size:15.5px;background:white; transition: border-color 0.2s, background-color 0.2s;}
+    
     .field input.input-error, .field select.input-error {
       border: 2px solid var(--error-border) !important;
       background-color: var(--error-bg) !important;
     }
+    
+    /* Disabled inputs look different */
+    .field input[readonly], .field input[disabled] {
+      background-color: #e9ecef;
+      color: #6c757d;
+      cursor: not-allowed;
+    }
+
     .field small{font-size:12.5px;color:var(--muted2);}
 
     /* Date Picker Wrapper */
@@ -85,38 +93,17 @@
     .period-type-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
     .period-type-header-left{display:flex;align-items:center;gap:10px;font-size:13.8px;font-weight:800;flex-wrap:wrap;}
 
-    /* Tooltip Fixes for Mobile */
-    .help-dot{
-      width:22px; height:22px; border-radius:50%; border:1px solid #c1c7d0; background:white;
-      color:#344563; display:inline-flex; align-items:center; justify-content:center;
-      font-weight:900; cursor:pointer; position:relative; flex:0 0 auto; user-select:none; font-size:13px; z-index: 100;
-    }
-    .tooltip {
-      position: absolute;
-      top: 32px;
-      right: -10px; /* Aligns comfortably to the right */
-      width: 270px; /* Fixed narrow width for mobile safety */
-      max-width: 80vw; /* Ensure it never exceeds screen width */
-      max-height: 50vh;
-      overflow-y: auto;
-      background: white;
-      border: 1px solid #dfe4ee;
-      box-shadow: 0 10px 30px rgba(9,30,66,0.25);
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 13px;
-      color: #253858;
-      line-height: 1.4;
-      display: none;
-      z-index: 1000; /* Very high z-index to sit on top of everything */
-      white-space: pre-line;
-      font-weight: normal;
-      text-align: right;
-    }
+    /* Tooltip */
+    .help-dot{width:22px;height:22px;border-radius:999px;border:1px solid #c1c7d0;background:white;color:#344563;display:inline-flex;align-items:center;justify-content:center;
+      font-weight:900;cursor:pointer;position:relative;flex:0 0 auto;user-select:none; font-size:13px; z-index: 100;}
+    .tooltip{position:absolute;top:32px;right:-10px;width:270px;max-width:80vw;max-height:50vh;overflow:auto;background:white;border:1px solid #dfe4ee;
+      box-shadow:0 10px 30px rgba(9,30,66,0.25);border-radius:12px;padding:12px;font-size:13px;color:#253858;line-height:1.4;display:none;z-index:1000;white-space:pre-line; font-weight:normal; text-align:right;}
     .help-dot.open .tooltip{display:block;}
 
     .period-type-form{display:none;margin-top:10px;}
     .period-type-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:flex-end;}
+    /* Special grid for prev workplace to accommodate the wide select */
+    .period-type-grid.prev-grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
 
     .small-btn{border-radius:999px;border:none;padding:10px 12px;font-size:13.5px;cursor:pointer;background:linear-gradient(135deg,#0078ff,#00c3ff);color:white;
       box-shadow:0 6px 16px rgba(0,120,255,0.28);white-space:nowrap;font-weight:900;}
@@ -140,7 +127,7 @@
 
     @media (max-width: 760px){
       .calc-grid{grid-template-columns:minmax(0,1fr);}
-      .period-type-grid{grid-template-columns:minmax(0,1fr);}
+      .period-type-grid, .period-type-grid.prev-grid {grid-template-columns:minmax(0,1fr);}
 
       .periods-table thead{display:none;}
       .periods-table, .periods-table tbody, .periods-table tr{display:block;width:100%;}
@@ -190,9 +177,7 @@
           <div class="label-row">
             <label for="f_salary">משכורת קובעת (₪)</label>
             <span class="help-dot">?
-              <span class="tooltip">
-                הנתון נמצא בתלוש השכר בצד ימין תחת נתוני עזר. חשוב להסתכל על תלוש ללא תוספות שכר חד פעמיות כמו מענק יובל.
-              </span>
+              <span class="tooltip">הנתון נמצא בתלוש השכר בצד ימין תחת נתוני עזר. חשוב להסתכל על תלוש ללא תוספות שכר חד פעמיות כמו מענק יובל.</span>
             </span>
           </div>
           <input id="f_salary" type="number" min="0" placeholder="לדוגמה: 24,382" inputmode="numeric" />
@@ -201,7 +186,7 @@
         <div class="field">
           <label for="f_birthdate">תאריך לידה</label>
           <div class="date-wrapper">
-            <input id="f_birthdate" type="text" placeholder="01.01.1990" />
+            <input id="f_birthdate" type="text" placeholder="01.01.1990" class="validate-date" />
             <div class="date-picker-btn">
               <input type="date" onchange="syncDate(this)" />
             </div>
@@ -211,9 +196,9 @@
         <div class="field">
           <label for="f_join_date">תאריך גיוס אחרון למשטרה</label>
           <div class="date-wrapper">
-            <input id="f_join_date" type="text" placeholder="15.07.2010" />
+            <input id="f_join_date" type="text" placeholder="15.07.2010" class="validate-date" onchange="syncPoliceDates()" />
             <div class="date-picker-btn">
-              <input type="date" onchange="syncDate(this)" />
+              <input type="date" onchange="syncDate(this); syncPoliceDates();" />
             </div>
           </div>
         </div>
@@ -221,9 +206,9 @@
         <div class="field">
           <label for="f_retire_date">תאריך פרישה משוער</label>
           <div class="date-wrapper">
-            <input id="f_retire_date" type="text" placeholder="31.01.2027" />
+            <input id="f_retire_date" type="text" placeholder="31.01.2027" class="validate-date" onchange="syncPoliceDates()" />
             <div class="date-picker-btn">
-              <input type="date" onchange="syncDate(this)" />
+              <input type="date" onchange="syncDate(this); syncPoliceDates();" />
             </div>
           </div>
         </div>
@@ -275,14 +260,14 @@
               <div class="field">
                 <label for="army_start">תאריך התחלה</label>
                 <div class="date-wrapper">
-                  <input id="army_start" type="text" placeholder="01.01.1989" />
+                  <input id="army_start" type="text" placeholder="01.01.1989" class="validate-date" />
                   <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
                 </div>
               </div>
               <div class="field">
                 <label for="army_end">תאריך סיום</label>
                 <div class="date-wrapper">
-                  <input id="army_end" type="text" placeholder="31.03.1990" />
+                  <input id="army_end" type="text" placeholder="31.03.1990" class="validate-date" />
                   <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
                 </div>
               </div>
@@ -296,29 +281,29 @@
           <div class="period-type-header">
             <div class="period-type-header-left">
               <label><input type="checkbox" data-type="prev" /> שירות במקום עבודה קודם המוכר לגמלאות</label>
-              <span class="help-dot">?
-                <span class="tooltip">
-להלן פירוט מקומות העבודה המוכרים לעניין חוק הגמלאות:
-משרדי ממשלה, תע"ש (עד 31.10.90), קק"ל, ממ"י, רפא"ל, שירות קבע, רשות הדואר (עד 1.7.77), ביטוח לאומי ועוד.
-וכן בתי חולים ומקומות עבודה השייכים למשרד הבריאות.
-                </span>
-              </span>
             </div>
           </div>
 
           <div class="period-type-form" data-type="prev">
-            <div class="period-type-grid">
+            <div class="period-type-grid prev-grid">
+              <div class="field" style="grid-column: span 4; margin-bottom: 6px;">
+                  <label for="prev_place_select">בחירת מקום עבודה (חובה לבחור מהרשימה)</label>
+                  <select id="prev_place_select" style="width:100%;">
+                    <option value="">-- בחר מקום עבודה --</option>
+                    </select>
+               </div>
+
               <div class="field">
                 <label for="prev_start">תאריך התחלה</label>
                 <div class="date-wrapper">
-                  <input id="prev_start" type="text" placeholder="01.01.2000" />
+                  <input id="prev_start" type="text" placeholder="01.01.2000" class="validate-date" />
                   <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
                 </div>
               </div>
               <div class="field">
                 <label for="prev_end">תאריך סיום</label>
                 <div class="date-wrapper">
-                  <input id="prev_end" type="text" placeholder="31.12.2005" />
+                  <input id="prev_end" type="text" placeholder="31.12.2005" class="validate-date" />
                   <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
                 </div>
               </div>
@@ -339,23 +324,18 @@
           <div class="period-type-header">
             <div class="period-type-header-left">
               <label><input type="checkbox" data-type="police" /> שירות נוכחי במשטרת ישראל</label>
+              <span class="badge" style="background:#e3fcef; color:#006644; border:none;">חובה להוסיף</span>
             </div>
           </div>
           <div class="period-type-form" data-type="police">
             <div class="period-type-grid">
               <div class="field">
-                <label for="police_start">תאריך התחלה</label>
-                <div class="date-wrapper">
-                  <input id="police_start" type="text" placeholder="04.07.1993" />
-                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
-                </div>
+                <label for="police_start">תאריך התחלה (נעול)</label>
+                <input id="police_start" type="text" readonly disabled placeholder="נשאב מתאריך גיוס" />
               </div>
               <div class="field">
-                <label for="police_end">תאריך סיום</label>
-                <div class="date-wrapper">
-                  <input id="police_end" type="text" placeholder="31.03.2027" />
-                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
-                </div>
+                <label for="police_end">תאריך סיום (נעול)</label>
+                <input id="police_end" type="text" readonly disabled placeholder="נשאב מתאריך פרישה" />
               </div>
               <div class="field"><label for="police_percent">חלקיות משרה (%)</label><input id="police_percent" type="number" min="1" max="200" placeholder="100" inputmode="numeric" /></div>
               <div class="field"><label>&nbsp;</label><button type="button" class="small-btn add-btn" data-type="police">הוסף תקופה</button></div>
@@ -379,14 +359,14 @@
               <div class="field">
                 <label for="absence_start">תאריך התחלה</label>
                 <div class="date-wrapper">
-                  <input id="absence_start" type="text" placeholder="01.01.2020" />
+                  <input id="absence_start" type="text" placeholder="01.01.2020" class="validate-date" />
                   <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
                 </div>
               </div>
               <div class="field">
                 <label for="absence_end">תאריך סיום</label>
                 <div class="date-wrapper">
-                  <input id="absence_end" type="text" placeholder="31.01.2020" />
+                  <input id="absence_end" type="text" placeholder="31.01.2020" class="validate-date" />
                   <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
                 </div>
               </div>
@@ -443,10 +423,96 @@
   const resultBox = document.getElementById("resultBox");
 
   const prevIsPrisonEl = document.getElementById("prev_is_prison");
+  const prevPlaceSelect = document.getElementById("prev_place_select");
 
   let periods = [];
   let idCounter = 1;
   let inlineEditId = null;
+
+  // --- 1. Populate Workplace List ---
+  const workplaceList = [
+    { group: "משרדי ממשלה וגופים ציבוריים", items: [
+      "משרד ממשלה (במעמד קבוע / ארעי / חוזה מיוחד / חמי / שליח)",
+      "תע\"ש (עד 31.10.1990)",
+      "קק\"ל (קרן קיימת לישראל)",
+      "ממ\"י (מרכז למחקר גרעיני, שורק)",
+      "רפא\"ל",
+      "שירות קבע בצה\"ל",
+      "מילואים בתנאי קבע (כשירות קבע בצה\"ל)",
+      "רשות הדואר ותעופה (אם נחשב כעובד מדינה עד 1.7.1977)",
+      "תחנות מע\"צ / קדם מתנ\"ס (משרד המשפטים)",
+      "שירות התעסוקה",
+      "המוסד לביטוח לאומי",
+      "רכבת ישראל (עד 1.12.1990)",
+      "רשות הנמלים (עד 1.5.1990)",
+      "בזק (עד 1.2.1984)",
+      "עמ\"י (עובד מדינה ישראלי)",
+      "אזרח עובד צה\"ל",
+      "רשות העתיקות (כעובד משרד החינוך בלבד)",
+      "שירות התעסוקה בצה\"ל",
+      "שירות קבע במשרד הביטחון/משטרה/שב\"כ/שב\"ס/מוסד",
+      "שירות מילואים (מזכה בתנאים מסוימים)"
+    ]},
+    { group: "משרד הבריאות ובתי חולים", items: [
+      "בי\"ח אסף הרופא", "בי\"ח תל השומר, שיבא", "בי\"ח רמב\"ם, חיפה",
+      "בי\"ח וולפסון, חולון", "בי\"ח ע\"ש רבקה זיו, צפת", "בי\"ח פוריה, טבריה",
+      "בי\"ח הלל יפה, חדרה", "בי\"ח נהריה (המרכז הרפואי גליל)", "בי\"ח ברזילי, אשקלון",
+      "בי\"ח כפר שאול", "בי\"ח נס ציונה", "בי\"ח מזרע", "בי\"ח איתנים", "בי\"ח פרדסיה",
+      "בי\"ח ע\"ש פלמן, רמות רמז, חיפה", "בי\"ח שמואל הרופא",
+      "מרכז לבריאות הנפש באר יעקב", "מרכז לבריאות הנפש אברבנאל בת ים",
+      "מרכז לבריאות הנפש טירת הכרמל", "מרכז לבריאות הנפש באר שבע",
+      "מרכז לבריאות הנפש שער מנשה", "מרכז הקהילתי לבריאות הנפש יפו",
+      "לשכת הבריאות פתח תקוה", "לשכת הבריאות רחובות", "לשכת הבריאות ירושלים",
+      "לשכת הבריאות ת\"א", "לשכת הבריאות חיפה", "לשכת הבריאות עכו",
+      "לשכת הבריאות נצרת", "לשכת הבריאות רמלה", "לשכת הבריאות חדרה",
+      "לשכת הבריאות באר שבע", "מרכז גריאטרי פנימה", "מרכז גריאטרי פרדס חנה",
+      "מרכז גריאטרי ראשון לציון", "מרכז גריאטרי פרדס כץ",
+      "מרכז גריאטרי תלפיות ירושלים", "קמ\"ן בריאות עכו", "קמ\"ן בריאות י\"ש",
+      "המחלקה לביקורת ותקנים", "המעבדות המרכזיות ירושלים",
+      "שירותי אספקה ת\"א", "המכון לרפואה משפטית אבו כביר"
+    ]}
+  ];
+
+  workplaceList.forEach(grp => {
+    const groupEl = document.createElement("optgroup");
+    groupEl.label = grp.group;
+    grp.items.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item;
+      opt.textContent = item;
+      groupEl.appendChild(opt);
+    });
+    prevPlaceSelect.appendChild(groupEl);
+  });
+
+  // --- 2. Date Sync for Police Service ---
+  window.syncPoliceDates = function() {
+    const joinVal = joinDateInput.value;
+    const retireVal = retireDateInput.value;
+    
+    document.getElementById("police_start").value = joinVal;
+    document.getElementById("police_end").value = retireVal;
+  };
+
+  // --- 3. Immediate Date Validation ---
+  document.querySelectorAll('.validate-date').forEach(input => {
+    input.addEventListener('change', function() {
+      if (this.value.trim() !== "") {
+        const iso = parseLooseDateToISO(this.value);
+        if (!iso) {
+          alert("תאריך לא תקין! יש להזין תאריך בפורמט מלא (למשל 01.01.2020)");
+          this.value = ""; // Clear invalid input
+          this.classList.add('input-error');
+        } else {
+          this.classList.remove('input-error');
+          // Format prettily if valid
+          const d = new Date(iso + "T00:00:00");
+          this.value = d.toLocaleDateString("he-IL");
+        }
+      }
+    });
+  });
+
 
   // Sync Date Picker -> Text Field
   window.syncDate = function(picker) {
@@ -459,7 +525,10 @@
       const textInput = wrapper.querySelector('input[type="text"]');
       if (textInput) {
         textInput.value = formatted;
-        textInput.classList.remove('input-error'); // remove error if user fixed it
+        textInput.classList.remove('input-error');
+        // Trigger validation/sync events
+        const event = new Event('change');
+        textInput.dispatchEvent(event);
       }
     }
   };
@@ -469,6 +538,7 @@
     el.addEventListener('input', () => el.classList.remove('input-error'));
   });
 
+  // Helper date parsers
   function parseLooseDateToISO(input){
     if (!input) return null;
     let s = String(input).trim();
@@ -528,13 +598,13 @@
     return (n || 0).toLocaleString("he-IL", { maximumFractionDigits: 0 });
   }
 
-  function typeLabel(t){
-    switch(t){
+  function typeLabel(p){
+    switch(p.type){
       case "army": return 'שירות בצה"ל חובה';
-      case "prev": return "שירות במקום עבודה קודם";
+      case "prev": return p.placeName ? `מקום עבודה קודם (${p.placeName})` : "שירות במקום עבודה קודם";
       case "police": return "שירות נוכחי במשטרת ישראל";
       case "absence": return "תקופות היעדרות שנרכשו";
-      default: return t || "-";
+      default: return p.type || "-";
     }
   }
 
@@ -603,17 +673,38 @@
     cb.addEventListener("change", () => {
       const type = cb.dataset.type;
       const form = document.querySelector(".period-type-form[data-type='" + type + "']");
-      if (form) form.style.display = cb.checked ? "block" : "none";
+      if (form) {
+        form.style.display = cb.checked ? "block" : "none";
+        // Auto-sync police dates if opened
+        if (type === 'police' && cb.checked) {
+          syncPoliceDates();
+        }
+      }
       if (type === "prev" && !cb.checked && prevIsPrisonEl) prevIsPrisonEl.checked = false;
     });
   });
-  // add period
+
+  // add period logic
   document.querySelectorAll(".add-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const type = btn.dataset.type;
       const startEl = document.getElementById(type + "_start");
       const endEl   = document.getElementById(type + "_end");
       const perEl   = document.getElementById(type + "_percent");
+
+      // Check for prev workplace selection
+      let placeName = null;
+      if (type === 'prev') {
+        const sel = document.getElementById('prev_place_select');
+        if (!sel.value) {
+          alert("חובה לבחור מקום עבודה מהרשימה.");
+          sel.classList.add('input-error');
+          return;
+        } else {
+          sel.classList.remove('input-error');
+          placeName = sel.value;
+        }
+      }
 
       const startISO = startEl ? parseLooseDateToISO(startEl.value) : null;
       const endISO   = endEl ? parseLooseDateToISO(endEl.value) : null;
@@ -626,12 +717,20 @@
       if (months <= 0){ alert("התקופה אינה מזכה (פחות מחודש / שארית 15 ימים ומטה)."); return; }
 
       const isPrisonActual = (type === "prev") ? !!(prevIsPrisonEl && prevIsPrisonEl.checked) : false;
-      periods.push({ id: idCounter++, type, startISO, endISO, percent, isPrisonActual });
+      
+      // Store period
+      periods.push({ id: idCounter++, type, startISO, endISO, percent, isPrisonActual, placeName });
 
-      if (startEl) startEl.value = "";
-      if (endEl) endEl.value = "";
+      // Clean up fields
+      if (type !== 'police') { // Don't clear police dates as they are bound
+         if (startEl) startEl.value = "";
+         if (endEl) endEl.value = "";
+      }
       if (perEl) perEl.value = "";
-      if (type === "prev" && prevIsPrisonEl) prevIsPrisonEl.checked = false;
+      if (type === "prev") {
+        if (prevIsPrisonEl) prevIsPrisonEl.checked = false;
+        document.getElementById('prev_place_select').value = "";
+      }
 
       renderTable();
     });
@@ -646,71 +745,21 @@
 
       const tr = document.createElement("tr");
 
-      if (inlineEditId === p.id){
-        tr.innerHTML = `
-          <td data-label="סוג תקופה">${typeLabel(p.type)}</td>
-          <td data-label="התחלה"><input class="inline-input" data-k="start" value="${formatDateFromISO(p.startISO)}"></td>
-          <td data-label="סיום"><input class="inline-input" data-k="end" value="${formatDateFromISO(p.endISO)}"></td>
-          <td data-label="חלקיות"><input class="inline-input" data-k="pct" type="number" min="1" max="200" value="${p.percent}"></td>
-          <td data-label="חודשים מוכרים">${months}</td>
-          <td data-label="שנים מוכרות">${eqYears.toFixed(2)}</td>
-          <td class="table-actions" data-label="פעולות">
-            <button class="primary" data-act="save">שמור</button>
-            <button data-act="cancel">ביטול</button>
-            <button data-act="del">מחק</button>
-          </td>
-        `;
-        tr.querySelector("[data-act='save']").addEventListener("click", () => {
-          const sVal = tr.querySelector("[data-k='start']").value;
-          const eVal = tr.querySelector("[data-k='end']").value;
-          const pVal = tr.querySelector("[data-k='pct']").value;
-
-          const startISO = parseLooseDateToISO(sVal);
-          const endISO   = parseLooseDateToISO(eVal);
-          const percent  = parseFloat(pVal);
-
-          if (!startISO || !endISO){ alert("תאריכים לא תקינים."); return; }
-          if (isNaN(percent) || percent <= 0){ alert("חלקיות משרה לא תקינה."); return; }
-
-          const m = recognizedMonths15_16(startISO, endISO);
-          if (m <= 0){ alert("התקופה אינה מזכה (פחות מחודש / שארית 15 ימים ומטה)."); return; }
-
-          periods = periods.map(x => x.id === p.id ? ({...x, startISO, endISO, percent}) : x);
-          inlineEditId = null;
-          renderTable();
-        });
-        tr.querySelector("[data-act='cancel']").addEventListener("click", () => {
-          inlineEditId = null;
-          renderTable();
-        });
-        tr.querySelector("[data-act='del']").addEventListener("click", () => {
-          periods = periods.filter(x => x.id !== p.id);
-          inlineEditId = null;
-          renderTable();
-        });
-        periodsTableBody.appendChild(tr);
-        return;
-      }
-
+      // Simply show static rows (Inline edit removed for simplicity with the complex dropdown logic, 
+      // but delete/re-add is available)
       tr.innerHTML = `
-        <td data-label="סוג תקופה">${typeLabel(p.type)}</td>
+        <td data-label="סוג תקופה">${typeLabel(p)}</td>
         <td data-label="התחלה">${formatDateFromISO(p.startISO)}</td>
         <td data-label="סיום">${formatDateFromISO(p.endISO)}</td>
         <td data-label="חלקיות">${(p.percent || 0).toFixed(0)}%</td>
         <td data-label="חודשים מוכרים">${months}</td>
         <td data-label="שנים מוכרות">${eqYears.toFixed(2)}</td>
         <td class="table-actions" data-label="פעולות">
-          <button data-act="edit">ערוך</button>
           <button data-act="del">מחק</button>
         </td>
       `;
-      tr.querySelector("[data-act='edit']").addEventListener("click", () => {
-        inlineEditId = p.id;
-        renderTable();
-      });
       tr.querySelector("[data-act='del']").addEventListener("click", () => {
         periods = periods.filter(x => x.id !== p.id);
-        if (inlineEditId === p.id) inlineEditId = null;
         renderTable();
       });
       periodsTableBody.appendChild(tr);
@@ -763,7 +812,7 @@
 
     // 5. STOP if errors found
     if (hasError) {
-      alert("יש לתקן את השדות המסומנים באדום (פורמט לא תקין או שדה חסר) לפני החישוב.");
+      alert("יש לתקן את השדות המסומנים באדום לפני החישוב.");
       resultBox.innerHTML = `<div class="result-title">שגיאה בנתונים.</div>נא לתקן את השדות המסומנים באדום.`;
       return;
     }
@@ -776,7 +825,6 @@
     const ageAtRetire = yearsDiff(birth, retire);
 
     if (pensionType === "funded") {
-      // ---- FUNDED PENSION LOGIC (Simple) ----
       resultBox.innerHTML = `
         <div class="result-title">תוצאות החישוב (פנסיה צוברת)</div>
         סוג פנסיה: פנסיה צוברת
@@ -789,12 +837,15 @@
       return;
     }
 
-    // ---- BUDGET PENSION LOGIC (Complex) ----
+    // ---- BUDGET PENSION LOGIC ----
     
-    // For budget pension, we MUST have periods
-    if (periods.length === 0){
-      alert("בפנסיה תקציבית חובה להזין לפחות תקופת שירות אחת.");
-      resultBox.innerHTML = `<div class="result-title">לא הוזנו תקופות שירות.</div>נא להזין לפחות תקופת שירות אחת בטבלה.`;
+    // Check if POLICE period exists
+    const hasPolicePeriod = periods.some(p => p.type === 'police');
+    if (!hasPolicePeriod) {
+      alert("חובה להוסיף את תקופת 'שירות נוכחי במשטרת ישראל' לטבלה לפני החישוב.");
+      resultBox.innerHTML = `<div class="result-title">חסר שירות משטרתי.</div>נא ללחוץ על 'הוסף תקופה' תחת שירות נוכחי במשטרת ישראל.`;
+      // Open the checkbox for them
+      document.querySelector("input[checkbox][data-type='police']").click();
       return;
     }
 
@@ -898,6 +949,7 @@
       if (p) p.value = "";
     });
     if (prevIsPrisonEl) prevIsPrisonEl.checked = false;
+    if (prevPlaceSelect) prevPlaceSelect.value = "";
 
     // Reset dates in pickers as well
     document.querySelectorAll("input[type='date']").forEach(d => d.value = "");
