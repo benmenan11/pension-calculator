@@ -30,8 +30,8 @@
     main{flex:1 1 auto;max-width:1024px;width:100%;margin:0 auto;padding:12px;display:flex;flex-direction:column;gap:12px;}
     .intro-card{background:var(--card);border-radius:16px;box-shadow:0 8px 20px rgba(9,30,66,0.16);padding:16px 16px 12px;display:flex;flex-direction:column;gap:8px;}
     .intro-title{font-size:18px;font-weight:700;}
-    .intro-subtitle{font-size:14.5px;color:var(--muted);line-height:1.35;}
-    .hint{font-size:13px;color:var(--muted2);line-height:1.35;}
+    .intro-subtitle{font-size:14.5px;color:var(--text);line-height:1.5;}
+    .hint{font-size:13px;color:var(--muted2);line-height:1.35; margin-top:6px;}
 
     .calc-shell{background:#f7f8fb;box-shadow:0 8px 22px rgba(9,30,66,0.18);border-radius:18px;border:1px solid var(--line);padding:12px 14px 14px;
       position:relative; display:flex;flex-direction:column;gap:12px;}
@@ -52,7 +52,6 @@
     .field label, .label-row label {font-size:13.5px;color:#344563; margin:0;}
     .label-row {display:flex; align-items:center; gap:6px;}
 
-    /* Input Styling including error state */
     .field input,.field select{border-radius:10px;border:1px solid var(--line2);padding:10px 10px;font-size:15.5px;background:white; transition: border-color 0.2s, background-color 0.2s;}
     
     .field input.input-error, .field select.input-error {
@@ -60,13 +59,6 @@
       background-color: var(--error-bg) !important;
     }
     
-    /* Disabled inputs look different */
-    .field input[readonly], .field input[disabled] {
-      background-color: #e9ecef;
-      color: #6c757d;
-      cursor: not-allowed;
-    }
-
     .field small{font-size:12.5px;color:var(--muted2);}
 
     /* Date Picker Wrapper */
@@ -102,7 +94,7 @@
 
     .period-type-form{display:none;margin-top:10px;}
     .period-type-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:flex-end;}
-    /* Special grid for prev workplace to accommodate the wide select */
+    /* Special grid for prev workplace */
     .period-type-grid.prev-grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
 
     .small-btn{border-radius:999px;border:none;padding:10px 12px;font-size:13.5px;cursor:pointer;background:linear-gradient(135deg,#0078ff,#00c3ff);color:white;
@@ -127,7 +119,17 @@
 
     @media (max-width: 760px){
       .calc-grid{grid-template-columns:minmax(0,1fr);}
-      .period-type-grid, .period-type-grid.prev-grid {grid-template-columns:minmax(0,1fr);}
+      
+      /* Fix for mobile layout - stack items vertically */
+      .period-type-grid, .period-type-grid.prev-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .period-type-grid .field {
+        width: 100%;
+        margin-bottom: 0;
+      }
 
       .periods-table thead{display:none;}
       .periods-table, .periods-table tbody, .periods-table tr{display:block;width:100%;}
@@ -156,12 +158,11 @@
   <section class="intro-card">
     <div class="intro-title">אומדן פרישה וקצבה</div>
     <div class="intro-subtitle">
-      יש להזין תאריכים בפורמט מלא ולהוסיף תקופות שירות אותן ניתן לקבל בדו"ח מהאמ"ש היחידתי.
-      ניתן להקליד תאריך (לדוגמה: 01.01.2020) או ללחוץ על האייקון 📅 לבחירה מיומן.
+      מחשבון זה נועד לסייע לשוטרי משטרת ישראל בקבלת אומדן כללי של זכויות הפרישה הצפויות להם עם היציאה לגמלאות.
+      לשם כך, יש להזין את נתוני השירות בהתאם להנחיות המופיעות בכל שדה, על בסיס דו"ח תקופות שירות מפורט המתקבל מהאמ"ש היחידתי. לאחר הזנת הנתונים יוצג חישוב משוער של הזכויות בפרישה.
     </div>
     <div class="hint">
-      תקרת 70% חלה על: שירות נוכחי במשטרה + מקומות עבודה קודמים + תקופות היעדרות שנרכשו.
-      ניתן לחרוג מ-70% רק בגין שירות חובה בצה״ל.
+      יובהר כי המידע המוצג במחשבון נועד לצרכי הערכה כללית בלבד, ואינו מהווה תחליף לחישוב רשמי המתבצע על-ידי מרכז הפרישה.
     </div>
   </section>
 
@@ -196,9 +197,9 @@
         <div class="field">
           <label for="f_join_date">תאריך גיוס אחרון למשטרה</label>
           <div class="date-wrapper">
-            <input id="f_join_date" type="text" placeholder="15.07.2010" class="validate-date" onchange="syncPoliceDates()" />
+            <input id="f_join_date" type="text" placeholder="15.07.2010" class="validate-date" />
             <div class="date-picker-btn">
-              <input type="date" onchange="syncDate(this); syncPoliceDates();" />
+              <input type="date" onchange="syncDate(this)" />
             </div>
           </div>
         </div>
@@ -206,9 +207,9 @@
         <div class="field">
           <label for="f_retire_date">תאריך פרישה משוער</label>
           <div class="date-wrapper">
-            <input id="f_retire_date" type="text" placeholder="31.01.2027" class="validate-date" onchange="syncPoliceDates()" />
+            <input id="f_retire_date" type="text" placeholder="31.01.2027" class="validate-date" />
             <div class="date-picker-btn">
-              <input type="date" onchange="syncDate(this); syncPoliceDates();" />
+              <input type="date" onchange="syncDate(this)" />
             </div>
           </div>
         </div>
@@ -330,12 +331,18 @@
           <div class="period-type-form" data-type="police">
             <div class="period-type-grid">
               <div class="field">
-                <label for="police_start">תאריך התחלה (נעול)</label>
-                <input id="police_start" type="text" readonly disabled placeholder="נשאב מתאריך גיוס" />
+                <label for="police_start">תאריך התחלה</label>
+                <div class="date-wrapper">
+                  <input id="police_start" type="text" placeholder="04.07.1993" class="validate-date" />
+                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
+                </div>
               </div>
               <div class="field">
-                <label for="police_end">תאריך סיום (נעול)</label>
-                <input id="police_end" type="text" readonly disabled placeholder="נשאב מתאריך פרישה" />
+                <label for="police_end">תאריך סיום</label>
+                <div class="date-wrapper">
+                  <input id="police_end" type="text" placeholder="31.03.2027" class="validate-date" />
+                  <div class="date-picker-btn"><input type="date" onchange="syncDate(this)" /></div>
+                </div>
               </div>
               <div class="field"><label for="police_percent">חלקיות משרה (%)</label><input id="police_percent" type="number" min="1" max="200" placeholder="100" inputmode="numeric" /></div>
               <div class="field"><label>&nbsp;</label><button type="button" class="small-btn add-btn" data-type="police">הוסף תקופה</button></div>
@@ -485,16 +492,7 @@
     prevPlaceSelect.appendChild(groupEl);
   });
 
-  // --- 2. Date Sync for Police Service ---
-  window.syncPoliceDates = function() {
-    const joinVal = joinDateInput.value;
-    const retireVal = retireDateInput.value;
-    
-    document.getElementById("police_start").value = joinVal;
-    document.getElementById("police_end").value = retireVal;
-  };
-
-  // --- 3. Immediate Date Validation ---
+  // --- 2. Immediate Date Validation ---
   document.querySelectorAll('.validate-date').forEach(input => {
     input.addEventListener('change', function() {
       if (this.value.trim() !== "") {
@@ -675,10 +673,6 @@
       const form = document.querySelector(".period-type-form[data-type='" + type + "']");
       if (form) {
         form.style.display = cb.checked ? "block" : "none";
-        // Auto-sync police dates if opened
-        if (type === 'police' && cb.checked) {
-          syncPoliceDates();
-        }
       }
       if (type === "prev" && !cb.checked && prevIsPrisonEl) prevIsPrisonEl.checked = false;
     });
@@ -722,10 +716,8 @@
       periods.push({ id: idCounter++, type, startISO, endISO, percent, isPrisonActual, placeName });
 
       // Clean up fields
-      if (type !== 'police') { // Don't clear police dates as they are bound
-         if (startEl) startEl.value = "";
-         if (endEl) endEl.value = "";
-      }
+      if (startEl) startEl.value = "";
+      if (endEl) endEl.value = "";
       if (perEl) perEl.value = "";
       if (type === "prev") {
         if (prevIsPrisonEl) prevIsPrisonEl.checked = false;
@@ -745,8 +737,6 @@
 
       const tr = document.createElement("tr");
 
-      // Simply show static rows (Inline edit removed for simplicity with the complex dropdown logic, 
-      // but delete/re-add is available)
       tr.innerHTML = `
         <td data-label="סוג תקופה">${typeLabel(p)}</td>
         <td data-label="התחלה">${formatDateFromISO(p.startISO)}</td>
@@ -839,14 +829,29 @@
 
     // ---- BUDGET PENSION LOGIC ----
     
-    // Check if POLICE period exists
-    const hasPolicePeriod = periods.some(p => p.type === 'police');
-    if (!hasPolicePeriod) {
+    // Validate Police Coverage
+    const policePeriods = periods.filter(p => p.type === 'police').sort((a,b) => a.startISO.localeCompare(b.startISO));
+    
+    if (policePeriods.length === 0) {
       alert("חובה להוסיף את תקופת 'שירות נוכחי במשטרת ישראל' לטבלה לפני החישוב.");
       resultBox.innerHTML = `<div class="result-title">חסר שירות משטרתי.</div>נא ללחוץ על 'הוסף תקופה' תחת שירות נוכחי במשטרת ישראל.`;
-      // Open the checkbox for them
-      document.querySelector("input[checkbox][data-type='police']").click();
+      document.querySelector("input[type='checkbox'][data-type='police']").click();
       return;
+    }
+
+    // CHECK OVERLAPS for police periods
+    for (let i = 0; i < policePeriods.length - 1; i++) {
+        if (policePeriods[i].endISO >= policePeriods[i+1].startISO) {
+             alert("נמצאה חפיפה בתאריכי השירות במשטרה! תקופה המסתיימת ב-" + formatDateFromISO(policePeriods[i].endISO) + 
+                   " חופפת לתקופה המתחילה ב-" + formatDateFromISO(policePeriods[i+1].startISO));
+             return;
+        }
+    }
+
+    // Check End Coverage Upper Bound (Must not exceed retire date)
+    if (policePeriods[policePeriods.length - 1].endISO > retireISO) {
+        alert("תקופת שירות במשטרה לא יכולה להסתיים אחרי תאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + ").");
+        return;
     }
 
     let eqArmy = 0, eqPrev = 0, eqPolice = 0, eqAbsence = 0;
