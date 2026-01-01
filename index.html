@@ -839,6 +839,18 @@
       return;
     }
 
+    // NEW CHECK: First period MUST start on Draft Date
+    if (policePeriods[0].startISO !== joinISO) {
+        alert("תקופת השירות הראשונה במשטרה חייבת להתחיל בדיוק בתאריך הגיוס שהוזן (" + formatDateFromISO(joinISO) + ").");
+        return;
+    }
+
+    // NEW CHECK: Last period MUST end on Retire Date
+    if (policePeriods[policePeriods.length - 1].endISO !== retireISO) {
+        alert("תקופת השירות האחרונה במשטרה חייבת להסתיים בדיוק בתאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + ").");
+        return;
+    }
+
     // CHECK OVERLAPS for police periods
     for (let i = 0; i < policePeriods.length - 1; i++) {
         if (policePeriods[i].endISO >= policePeriods[i+1].startISO) {
@@ -846,12 +858,6 @@
                    " חופפת לתקופה המתחילה ב-" + formatDateFromISO(policePeriods[i+1].startISO));
              return;
         }
-    }
-
-    // Check End Coverage Upper Bound (Must not exceed retire date)
-    if (policePeriods[policePeriods.length - 1].endISO > retireISO) {
-        alert("תקופת שירות במשטרה לא יכולה להסתיים אחרי תאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + ").");
-        return;
     }
 
     let eqArmy = 0, eqPrev = 0, eqPolice = 0, eqAbsence = 0;
