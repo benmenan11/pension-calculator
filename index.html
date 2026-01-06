@@ -130,6 +130,10 @@
         width: 100%;
         margin-bottom: 0;
       }
+      /* Ensure select in prev-grid takes full width on mobile */
+      .period-type-grid.prev-grid .field[style*="grid-column"] {
+        grid-column: auto !important; 
+      }
 
       .periods-table thead{display:none;}
       .periods-table, .periods-table tbody, .periods-table tr{display:block;width:100%;}
@@ -707,6 +711,29 @@
       if (!startISO || !endISO){ alert("נא להזין תאריך התחלה ותאריך סיום בפורמט תקין."); return; }
       if (isNaN(percent) || percent <= 0){ alert("נא להזין חלקיות משרה תקינה (50/75/100/150)."); return; }
 
+      // Basic validation: Start < End
+      if (startISO >= endISO) {
+        alert("תאריך סיום חייב להיות מאוחר מתאריך התחלה.");
+        return;
+      }
+
+      // Check overlap with ANY existing period
+      const isOverlap = periods.some(p => {
+        return (startISO < p.endISO) && (endISO > p.startISO);
+      });
+      if (isOverlap) {
+        alert("התקופה חופפת לתקופה אחרת שכבר הוזנה! נא לבדוק את התאריכים.");
+        return;
+      }
+
+      // Check max end date (against global retirement date)
+      const retireVal = retireDateInput.value;
+      const globalRetireISO = parseLooseDateToISO(retireVal);
+      if (globalRetireISO && endISO > globalRetireISO) {
+        alert("תאריך סיום התקופה לא יכול להיות מאוחר מתאריך הפרישה המשוער (" + formatDateFromISO(globalRetireISO) + ").");
+        return;
+      }
+
       const months = recognizedMonths15_16(startISO, endISO);
       if (months <= 0){ alert("התקופה אינה מזכה (פחות מחודש / שארית 15 ימים ומטה)."); return; }
 
@@ -730,6 +757,9 @@
 
   function renderTable(){
     periodsTableBody.innerHTML = "";
+
+    // Sort periods by start date
+    periods.sort((a,b) => a.startISO.localeCompare(b.startISO));
 
     periods.forEach(p => {
       const months = recognizedMonths15_16(p.startISO, p.endISO);
@@ -837,27 +867,6 @@
       resultBox.innerHTML = `<div class="result-title">חסר שירות משטרתי.</div>נא ללחוץ על 'הוסף תקופה' תחת שירות נוכחי במשטרת ישראל.`;
       document.querySelector("input[type='checkbox'][data-type='police']").click();
       return;
-    }
-
-    // NEW CHECK: First period MUST start on Draft Date
-    if (policePeriods[0].startISO !== joinISO) {
-        alert("תקופת השירות הראשונה במשטרה חייבת להתחיל בדיוק בתאריך הגיוס שהוזן (" + formatDateFromISO(joinISO) + ").");
-        return;
-    }
-
-    // NEW CHECK: Last period MUST end on Retire Date
-    if (policePeriods[policePeriods.length - 1].endISO !== retireISO) {
-        alert("תקופת השירות האחרונה במשטרה חייבת להסתיים בדיוק בתאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + ").");
-        return;
-    }
-
-    // CHECK OVERLAPS for police periods
-    for (let i = 0; i < policePeriods.length - 1; i++) {
-        if (policePeriods[i].endISO >= policePeriods[i+1].startISO) {
-             alert("נמצאה חפיפה בתאריכי השירות במשטרה! תקופה המסתיימת ב-" + formatDateFromISO(policePeriods[i].endISO) + 
-                   " חופפת לתקופה המתחילה ב-" + formatDateFromISO(policePeriods[i+1].startISO));
-             return;
-        }
     }
 
     let eqArmy = 0, eqPrev = 0, eqPolice = 0, eqAbsence = 0;
