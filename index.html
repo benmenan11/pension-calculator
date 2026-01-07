@@ -113,7 +113,20 @@
       display:inline-flex;align-items:center;gap:8px;box-shadow:0 8px 18px rgba(0,120,255,0.32);}
     .secondary-btn{border-radius:999px;border:1px solid var(--line2);padding:10px 16px;font-size:14.5px;cursor:pointer;background:white;color:#42526e;font-weight:900;}
 
-    .result-box{margin-top:8px;background:rgba(255,255,255,0.96);border-radius:14px;padding:12px 12px;border:1px dashed var(--line2);font-size:13.8px;color:#253858;white-space:pre-line;}
+    .result-box{
+      margin-top:8px;
+      background:rgba(255,255,255,0.96);
+      border-radius:14px;
+      padding:12px 12px;
+      border:1px dashed var(--line2);
+      font-size:13.8px;
+      color:#253858;
+      white-space: pre-wrap; 
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      width: 100%;
+      box-sizing: border-box;
+    }
     .result-title{font-weight:950;margin-bottom:6px;font-size:14.5px;}
     .footnote{font-size:12.5px;color:#6b778c;margin-top:8px;line-height:1.35;}
 
@@ -866,14 +879,9 @@
       return;
     }
 
-    // Check End Coverage Upper Bound (Must not exceed retire date)
-    if (policePeriods[policePeriods.length - 1].endISO > retireISO) {
-        alert("תקופת שירות במשטרה לא יכולה להסתיים אחרי תאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + ").");
-        return;
-    }
     // Check Coverage End matches Retirement (Must go up to retirement)
     if (policePeriods[policePeriods.length - 1].endISO !== retireISO) {
-        alert("תקופת שירות הנוכחי האחרונה במשטרה חייבת להסתיים בדיוק בתאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + "). כרגע היא מסתיימת ב-" + formatDateFromISO(policePeriods[policePeriods.length - 1].endISO));
+        alert("תקופת השירות האחרונה במשטרה חייבת להסתיים בדיוק בתאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + "). כרגע היא מסתיימת ב-" + formatDateFromISO(policePeriods[policePeriods.length - 1].endISO));
         return;
     }
 
