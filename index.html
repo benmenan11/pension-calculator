@@ -707,28 +707,6 @@
     });
   });
 
-  // -- Auto Fill Police Dates when Main Dates Change --
-  function autoFillPoliceDates() {
-    const j = document.getElementById("f_join_date").value;
-    const r = document.getElementById("f_retire_date").value;
-    
-    const policeStartInput = document.getElementById("police_start");
-    const policeEndInput = document.getElementById("police_end");
-    
-    // Only set if exists
-    if (policeStartInput && j) policeStartInput.value = j;
-    if (policeEndInput && r) policeEndInput.value = r;
-  }
-
-  // Bind listener to main dates
-  document.getElementById("f_join_date").addEventListener("change", autoFillPoliceDates);
-  document.getElementById("f_retire_date").addEventListener("change", autoFillPoliceDates);
-  // Also on checkbox toggle for police
-  document.querySelector("input[data-type='police']").addEventListener("change", (e) => {
-    if (e.target.checked) autoFillPoliceDates();
-  });
-
-
   // add period logic
   document.querySelectorAll(".add-btn").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -814,9 +792,6 @@
         if (prevIsPrisonEl) prevIsPrisonEl.checked = false;
         document.getElementById('prev_place_select').value = "";
       }
-      
-      // If police added, re-fill default dates for next potential entry
-      if (type === 'police') autoFillPoliceDates();
 
       renderTable();
     });
@@ -936,6 +911,11 @@
       return;
     }
 
+    // Check End Coverage Upper Bound (Must not exceed retire date)
+    if (policePeriods[policePeriods.length - 1].endISO > retireISO) {
+        alert("תקופת שירות במשטרה לא יכולה להסתיים אחרי תאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + ").");
+        return;
+    }
     // Check Coverage End matches Retirement (Must go up to retirement)
     if (policePeriods[policePeriods.length - 1].endISO !== retireISO) {
         alert("תקופת שירות האחרונה במשטרה חייבת להסתיים בדיוק בתאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + "). כרגע היא מסתיימת ב-" + formatDateFromISO(policePeriods[policePeriods.length - 1].endISO));
