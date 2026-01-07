@@ -33,7 +33,6 @@
     .intro-subtitle{font-size:14.5px;color:var(--text);line-height:1.5;}
     .hint{font-size:13px;color:var(--muted2);line-height:1.35; margin-top:6px;}
 
-    /* Removed overflow:hidden to allow tooltips to pop out safely */
     .calc-shell{background:#f7f8fb;box-shadow:0 8px 22px rgba(9,30,66,0.18);border-radius:18px;border:1px solid var(--line);padding:12px 14px 14px;
       position:relative; display:flex;flex-direction:column;gap:12px;}
     
@@ -101,7 +100,16 @@
     .small-btn{border-radius:999px;border:none;padding:10px 12px;font-size:13.5px;cursor:pointer;background:linear-gradient(135deg,#0078ff,#00c3ff);color:white;
       box-shadow:0 6px 16px rgba(0,120,255,0.28);white-space:nowrap;font-weight:900;}
 
-    .periods-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px;overflow:hidden;border-radius:12px;}
+    /* TABLE SCROLL CONTAINER FOR MOBILE */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid #e1e4ea;
+      margin-top: 10px;
+    }
+
+    .periods-table{width:100%;border-collapse:collapse;font-size:13.5px; min-width: 600px;} /* Min width to prevent squashing */
     .periods-table th,.periods-table td{border-bottom:1px solid #e1e4ea;padding:8px 8px;text-align:right;vertical-align:top;}
     .periods-table th{background:#f4f5f7;font-weight:900;font-size:13.5px;}
     .table-actions button{border-radius:999px;border:1px solid var(--line2);padding:6px 10px;font-size:12.5px;cursor:pointer;background:white;margin-left:6px;white-space:nowrap;font-weight:900;}
@@ -149,14 +157,16 @@
         grid-column: auto !important; 
       }
 
-      .periods-table thead{display:none;}
-      .periods-table, .periods-table tbody, .periods-table tr{display:block;width:100%;}
-      .periods-table tr{background:#ffffff;border:1px solid #e6e9f0;border-radius:14px;padding:8px;margin-top:10px;box-shadow:0 6px 14px rgba(9,30,66,0.08);}
-      .periods-table td{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed #e6e9f0;padding:8px 6px;text-align:right;}
-      .periods-table td:last-child{border-bottom:none;}
-      .periods-table td::before{content: attr(data-label);font-weight:900;color:#344563;flex:0 0 44%;}
-      .table-actions{display:flex;justify-content:flex-start;gap:8px;flex-wrap:wrap;}
-      .periods-table td.table-actions::before{content:"פעולות";}
+      /* Mobile Table fixes: now using scroll instead of stacked blocks to avoid cutting */
+      /* .periods-table thead{display:none;} */ /* We keep thead now for scroll view */
+      
+      /* Reverting to table layout with scroll for better viewing */
+      .periods-table, .periods-table tbody, .periods-table tr {
+         display: table-row-group; 
+         width: auto;
+      }
+      .periods-table tr { display: table-row; }
+      .periods-table td, .periods-table th { display: table-cell; }
     }
   </style>
 </head>
@@ -401,20 +411,22 @@
           </div>
         </div>
 
-        <table class="periods-table" id="periodsTable">
-          <thead>
-            <tr>
-              <th>סוג תקופה</th>
-              <th>התחלה</th>
-              <th>סיום</th>
-              <th>חלקיות</th>
-              <th>חודשים מוכרים (כלל 15/16)</th>
-              <th>שנים מוכרות (מותאם)</th>
-              <th>פעולות</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="table-container">
+          <table class="periods-table" id="periodsTable">
+            <thead>
+              <tr>
+                <th>סוג תקופה</th>
+                <th>התחלה</th>
+                <th>סיום</th>
+                <th>חלקיות</th>
+                <th>חודשים מוכרים (כלל 15/16)</th>
+                <th>שנים מוכרות (מותאם)</th>
+                <th>פעולות</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
       </section>
 
       <div class="calc-actions">
@@ -910,10 +922,25 @@
       return;
     }
 
+    // NEW CHECK: First period MUST start on Draft Date
+    if (policePeriods[0].startISO < joinISO) {
+        alert("תקופת השירות הראשונה במשטרה אינה יכולה להתחיל לפני תאריך הגיוס האחרון (" + formatDateFromISO(joinISO) + ").");
+        return;
+    }
+
     // Check Coverage End matches Retirement (Must go up to retirement)
     if (policePeriods[policePeriods.length - 1].endISO !== retireISO) {
         alert("תקופת השירות האחרונה במשטרה חייבת להסתיים בדיוק בתאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + "). כרגע היא מסתיימת ב-" + formatDateFromISO(policePeriods[policePeriods.length - 1].endISO));
         return;
+    }
+
+    // CHECK OVERLAPS for police periods
+    for (let i = 0; i < policePeriods.length - 1; i++) {
+        if (policePeriods[i].endISO >= policePeriods[i+1].startISO) {
+             alert("נמצאה חפיפה בתאריכי השירות במשטרה! תקופה המסתיימת ב-" + formatDateFromISO(policePeriods[i].endISO) + 
+                   " חופפת לתקופה המתחילה ב-" + formatDateFromISO(policePeriods[i+1].startISO));
+             return;
+        }
     }
 
     let eqArmy = 0, eqPrev = 0, eqPolice = 0, eqAbsence = 0;
