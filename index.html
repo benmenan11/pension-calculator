@@ -33,6 +33,7 @@
     .intro-subtitle{font-size:14.5px;color:var(--text);line-height:1.5;}
     .hint{font-size:13px;color:var(--muted2);line-height:1.35; margin-top:6px;}
 
+    /* Removed overflow:hidden to allow tooltips to pop out safely */
     .calc-shell{background:#f7f8fb;box-shadow:0 8px 22px rgba(9,30,66,0.18);border-radius:18px;border:1px solid var(--line);padding:12px 14px 14px;
       position:relative; display:flex;flex-direction:column;gap:12px;}
     
@@ -109,7 +110,7 @@
       margin-top: 10px;
     }
 
-    .periods-table{width:100%;border-collapse:collapse;font-size:13.5px; min-width: 600px;} /* Min width to prevent squashing */
+    .periods-table{width:100%;border-collapse:collapse;font-size:13.5px; min-width: 600px;} 
     .periods-table th,.periods-table td{border-bottom:1px solid #e1e4ea;padding:8px 8px;text-align:right;vertical-align:top;}
     .periods-table th{background:#f4f5f7;font-weight:900;font-size:13.5px;}
     .table-actions button{border-radius:999px;border:1px solid var(--line2);padding:6px 10px;font-size:12.5px;cursor:pointer;background:white;margin-left:6px;white-space:nowrap;font-weight:900;}
@@ -157,10 +158,7 @@
         grid-column: auto !important; 
       }
 
-      /* Mobile Table fixes: now using scroll instead of stacked blocks to avoid cutting */
-      /* .periods-table thead{display:none;} */ /* We keep thead now for scroll view */
-      
-      /* Reverting to table layout with scroll for better viewing */
+      /* Table layout preserved via scroll */
       .periods-table, .periods-table tbody, .periods-table tr {
          display: table-row-group; 
          width: auto;
@@ -776,6 +774,16 @@
         return;
       }
 
+      // 1. Police specific: Cannot be earlier than enlistment date
+      if (type === 'police') {
+        const joinVal = document.getElementById("f_join_date").value;
+        const joinISO = parseLooseDateToISO(joinVal);
+        if (joinISO && startISO < joinISO) {
+             alert("שגיאה: תאריך התחלת השירות הנוכחי במשטרה לא יכול להיות לפני תאריך הגיוס האחרון (" + formatDateFromISO(joinISO) + ")");
+             return;
+        }
+      }
+
       // Check max end date (against global retirement date)
       const retireVal = retireDateInput.value;
       const globalRetireISO = parseLooseDateToISO(retireVal);
@@ -922,25 +930,10 @@
       return;
     }
 
-    // NEW CHECK: First period MUST start on Draft Date
-    if (policePeriods[0].startISO < joinISO) {
-        alert("תקופת השירות הראשונה במשטרה אינה יכולה להתחיל לפני תאריך הגיוס האחרון (" + formatDateFromISO(joinISO) + ").");
-        return;
-    }
-
     // Check Coverage End matches Retirement (Must go up to retirement)
     if (policePeriods[policePeriods.length - 1].endISO !== retireISO) {
         alert("תקופת השירות האחרונה במשטרה חייבת להסתיים בדיוק בתאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + "). כרגע היא מסתיימת ב-" + formatDateFromISO(policePeriods[policePeriods.length - 1].endISO));
         return;
-    }
-
-    // CHECK OVERLAPS for police periods
-    for (let i = 0; i < policePeriods.length - 1; i++) {
-        if (policePeriods[i].endISO >= policePeriods[i+1].startISO) {
-             alert("נמצאה חפיפה בתאריכי השירות במשטרה! תקופה המסתיימת ב-" + formatDateFromISO(policePeriods[i].endISO) + 
-                   " חופפת לתקופה המתחילה ב-" + formatDateFromISO(policePeriods[i+1].startISO));
-             return;
-        }
     }
 
     let eqArmy = 0, eqPrev = 0, eqPolice = 0, eqAbsence = 0;
@@ -985,8 +978,6 @@
     const roomTo70 = Math.max(0, CAP_NON_ARMY - nonArmyBasePercent);
     const mfkalApplied = Math.min(mfkalCalculated, MFKAL_MAX, roomTo70);
     const totalPensionPercent = basePensionPercent + mfkalApplied;
-    
-    // Apply Cost of Living Factor
     const monthlyPension = salary * totalPensionPercent * COST_OF_LIVING_FACTOR;
 
     const out =
