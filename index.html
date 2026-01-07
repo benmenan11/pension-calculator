@@ -33,7 +33,6 @@
     .intro-subtitle{font-size:14.5px;color:var(--text);line-height:1.5;}
     .hint{font-size:13px;color:var(--muted2);line-height:1.35; margin-top:6px;}
 
-    /* Removed overflow:hidden to allow tooltips to pop out safely */
     .calc-shell{background:#f7f8fb;box-shadow:0 8px 22px rgba(9,30,66,0.18);border-radius:18px;border:1px solid var(--line);padding:12px 14px 14px;
       position:relative; display:flex;flex-direction:column;gap:12px;}
     
@@ -775,11 +774,18 @@
       }
 
       // 1. Police specific: Cannot be earlier than enlistment date
+      // This is the CRUCIAL FIX requested
       if (type === 'police') {
         const joinVal = document.getElementById("f_join_date").value;
         const joinISO = parseLooseDateToISO(joinVal);
-        if (joinISO && startISO < joinISO) {
-             alert("שגיאה: תאריך התחלת השירות הנוכחי במשטרה לא יכול להיות לפני תאריך הגיוס האחרון (" + formatDateFromISO(joinISO) + ")");
+        
+        if (!joinISO) {
+             alert("חובה להזין תאריך גיוס אחרון בחלק העליון לפני הזנת שירות נוכחי במשטרת ישראל.");
+             return;
+        }
+
+        if (startISO < joinISO) {
+             alert("שגיאה: תאריך התחלת השירות הנוכחי במשטרה לא יכול להיות לפני תאריך הגיוס האחרון (" + formatDateFromISO(joinISO) + ").");
              return;
         }
       }
@@ -932,7 +938,7 @@
 
     // Check Coverage End matches Retirement (Must go up to retirement)
     if (policePeriods[policePeriods.length - 1].endISO !== retireISO) {
-        alert("תקופת השירות האחרונה במשטרה חייבת להסתיים בדיוק בתאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + "). כרגע היא מסתיימת ב-" + formatDateFromISO(policePeriods[policePeriods.length - 1].endISO));
+        alert("תקופת שירות האחרונה במשטרה חייבת להסתיים בדיוק בתאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + "). כרגע היא מסתיימת ב-" + formatDateFromISO(policePeriods[policePeriods.length - 1].endISO));
         return;
     }
 
