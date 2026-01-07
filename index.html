@@ -502,7 +502,7 @@
       if (this.value.trim() !== "") {
         const iso = parseLooseDateToISO(this.value);
         if (!iso) {
-          alert("תאריך לא תקין! יש להזין תאריך בפורמט מלא (למשל 01.01.2020)");
+          alert("יש להזין תאריך תקין");
           this.value = ""; // Clear invalid input
           this.classList.add('input-error');
         } else {
@@ -758,9 +758,6 @@
   function renderTable(){
     periodsTableBody.innerHTML = "";
 
-    // Sort periods by start date
-    periods.sort((a,b) => a.startISO.localeCompare(b.startISO));
-
     periods.forEach(p => {
       const months = recognizedMonths15_16(p.startISO, p.endISO);
       const eqYears = recognizedYearsAdjusted(p.startISO, p.endISO, p.percent);
@@ -867,6 +864,17 @@
       resultBox.innerHTML = `<div class="result-title">חסר שירות משטרתי.</div>נא ללחוץ על 'הוסף תקופה' תחת שירות נוכחי במשטרת ישראל.`;
       document.querySelector("input[type='checkbox'][data-type='police']").click();
       return;
+    }
+
+    // Check End Coverage Upper Bound (Must not exceed retire date)
+    if (policePeriods[policePeriods.length - 1].endISO > retireISO) {
+        alert("תקופת שירות במשטרה לא יכולה להסתיים אחרי תאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + ").");
+        return;
+    }
+    // Check Coverage End matches Retirement (Must go up to retirement)
+    if (policePeriods[policePeriods.length - 1].endISO !== retireISO) {
+        alert("תקופת שירות הנוכחי האחרונה במשטרה חייבת להסתיים בדיוק בתאריך הפרישה המשוער (" + formatDateFromISO(retireISO) + "). כרגע היא מסתיימת ב-" + formatDateFromISO(policePeriods[policePeriods.length - 1].endISO));
+        return;
     }
 
     let eqArmy = 0, eqPrev = 0, eqPolice = 0, eqAbsence = 0;
