@@ -33,6 +33,7 @@
     .intro-subtitle{font-size:14.5px;color:var(--text);line-height:1.5;}
     .hint{font-size:13px;color:var(--muted2);line-height:1.35; margin-top:6px;}
 
+    /* Removed overflow:hidden to allow tooltips to pop out safely */
     .calc-shell{background:#f7f8fb;box-shadow:0 8px 22px rgba(9,30,66,0.18);border-radius:18px;border:1px solid var(--line);padding:12px 14px 14px;
       position:relative; display:flex;flex-direction:column;gap:12px;}
     
@@ -433,6 +434,8 @@
   const BASE_RATE = 0.02;
   const CAP_NON_ARMY = 0.70;
   const MFKAL_MAX = 0.06;
+  const COST_OF_LIVING_FACTOR = 1.0382;
+
   const salaryInput      = document.getElementById("f_salary");
   const birthdateInput   = document.getElementById("f_birthdate");
   const joinDateInput    = document.getElementById("f_join_date");
@@ -700,12 +703,10 @@
     const j = document.getElementById("f_join_date").value;
     const r = document.getElementById("f_retire_date").value;
     
-    // Only autofill if the inputs are empty or user hasn't messed with them much.
-    // For simplicity: Always update the input value in the Add form if it exists.
-    // But allow user to change it.
     const policeStartInput = document.getElementById("police_start");
     const policeEndInput = document.getElementById("police_end");
     
+    // Only set if exists
     if (policeStartInput && j) policeStartInput.value = j;
     if (policeEndInput && r) policeEndInput.value = r;
   }
@@ -957,7 +958,9 @@
     const roomTo70 = Math.max(0, CAP_NON_ARMY - nonArmyBasePercent);
     const mfkalApplied = Math.min(mfkalCalculated, MFKAL_MAX, roomTo70);
     const totalPensionPercent = basePensionPercent + mfkalApplied;
-    const monthlyPension = salary * totalPensionPercent;
+    
+    // Apply Cost of Living Factor
+    const monthlyPension = salary * totalPensionPercent * COST_OF_LIVING_FACTOR;
 
     const out =
 `סוג פנסיה: פנסיה תקציבית
@@ -986,7 +989,7 @@
     resultBox.innerHTML =
       `<div class="result-title">תוצאות החישוב</div>` +
       lines.replaceAll("\n", "<br/>") +
-      `<div class="footnote">* הנתון המוצג אינו כולל תוספת ותק ומקדם יוקר.</div>` +
+      `<div class="footnote">* הנתון המוצג אינו כולל תוספת ותק.</div>` +
       `<div class="footnote">התחשיב האמור הינו משוער בלבד ואינו משמש כתחליף לסימולטור הרשמי או לבדיקה פרטנית במרכז פרישה.</div>`;
   });
 
